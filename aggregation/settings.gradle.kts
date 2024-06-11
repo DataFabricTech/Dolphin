@@ -13,9 +13,7 @@ dependencyResolutionManagement {
     }
 }
 
-includeBuild("../share")
-includeBuild("../libs")
-includeBuild("../services")
+includeBuild("..")
 
 // == Define the inner structure of this component ==
 rootProject.name = "aggregation"

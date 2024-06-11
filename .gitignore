@@ -53,3 +53,6 @@ gradle/wrapper/
 /services/gateway/protobuf/
 /services/gateway/.cache/
 /services/gateway/Library/Caches/go-build/
+
+*.db
+Chart.lock

@@ -1,170 +1,111 @@
-# DataFabricPlatform
+# Dolphin Project
 
-## 스펙
+Data Operations and Processing with Logically Integrated High-performance INtegration
 
-- Java 11
+## Tools
 
-## 소개
+- Gradle 8.2 (Kotlin)
+- Java 17
+- Spring Boot 3.3.0
+    - spark 와 spring boot 3.x 간 dependency 문제가 있음
+        - spark 대신 trino 사용 시 spring boot 3.x 버전 사용 가능
+    - spring-boot-starter-data-jpa
+    - spring-boot-starter-amqp
+- Trino 435 (Java 17 을 지원하는 마지막 버전)
+- Hive Metastore
+- MinIO
 
-본 저장소는 데이터 패브릭 구성요소 중 Data Catalog 를 위한
-플랫폼 서비스(모듈) 저장소이다.
+## Features
 
-- Data Catalog 주요 기능
-    - Virtualization(Metadata)
-    - Governance(Access Control(Access, View))
-    - Monitoring
-    - Search
+- 데이터 모델
+    - 생성
+        - Base 모델 생성 (실제 테이블 + SQL 로 구성된 것)
+            - 연결 정보 (OpenMetadata DB 에서 조회)
+            - SQL
+        - 복합 모델 생성 (view 개념, Base 모델을 융합한 것 + SQL)
+            - 모델
+            - 융합 조건
+            - SQL
+    - 조회
+        - 리스트 조회
+            - 많이 열어본 ?
+            - 최근 열어본 ?
+        - 정보 조회
+        - 데이터 조회
+        - 다운로드
+    - 삭제
+        - 모델 삭제
+- 히스토리
+    - 쿼리 실행
+    - 생성 / 삭제
 
-## 저장소 구성
+## Develop Guide
 
-Gradle (Kotlin DSL활용)이용한 멀티 프로젝트 구조로 구성되어 있다.
+### Dependencies
 
-- data-fabric-platform
-    - Libs
-        - gRPC(Server, Client)
-        - Configuration
-    - Services
-        - Core
-        - Query
-        - Storage-interface
-        - Process-Manager
-        - Monitoring
-        - Metadata
-    - Shared
-        - ...
+#### Install with Docker
 
-## Lib 설명
+- [RabbitMQ](./docs/dependencies/RabbitMQ.md)
+- RDBMS (default: H2)
+- [Hive3 MetaStore](./docs/dependencies/Hive.md)
+- [Trino](./docs/dependencies/Trino.md)
+- FileSystem (default: [MinIO](./docs/dependencies/MinIO.md))
 
-### gRPC
+#### Install with Kubernetes and Helm
 
-### Configuration
+- Dependency
+    - kubernetes 설치 (local 에서 할 경우 minikube 설치)
+    - kubectl 설치
+    - helm 설치
+- 테스트 된 버전
+    - minikube
+        - minikube version: v1.32.0
+        - commit: 8220a6eb95f0a4d75f7f2d7b14cef975f050512d
+    - kubectl
+        - Client Version: v1.29.2
+        - Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+        - Server Version: v1.28.3
+    - helm
+        - version.BuildInfo{Version:"v3.14.4", GitCommit:"81c902a123462fd4052bc5e9aa9c513c4c8fc142", GitTreeState:"
+          clean", GoVersion:"go1.22.2"}
 
-## Service 별 설명
+- trino repository 추가
 
-### Core
-
-데이터 카탈로그를 위한 핵심 기능을 제공하는 서비스이다.
-
-- 주요 기능
-    - 검색
-        - 사용자 검색 처리 : 저장소 인터페이스를 통해 요청 처리
-    - 원천 데이터 저장소 관리(추가, 수정, 삭제)
-    - 원천 데이터 저장소 브라우징(탐색)
-    - 데이터 관리(추가, 수정, 삭제)
-        - 원천 데이터의 가상화(메타 데이터 추출)과 가상화(메타데이터)된 데이터의 관리
-    - 데이터 브라우징(탐색)
-    - 서브 프로세스 연동
-        - 메타 데이터 추출
-        - 모니터링
-        - 사용자 쿼리
-
-### Query
-
-- 주요 기능
-    - 사용자 쿼리 처리
-
-### Storage Interface
-
-- 주요 기능
-    - Solr(검색엔진)
-        - 사용자 검색 요청 처리를 위한 데이터 저장소
-    - Internal Storage(내부 저장소)
-        - 데이터 패브릭 시스템의 내부 저장소
-
-### Monitoring
-
-- 주요 기능
-    - Storage 상태 감시
-    - Data 상태 감시
-
-### Metadata
-
-1차에서는 정적인 메타 데이터 추출을 수행한다. 이 후
-증강된 데이터 카탈로그(Augmented Data Catalog)를 위해 중요한 서비스이다.
-
-- 주요 기능
-    - 메타 데이터 추출
-
-### Process Manager
-
-반복적인 작업을 대량으로 수행하는 서비스들의 작업 관리와 더불어 작업 처리 속도에 따라
-추가적인 컨테이너(프로세스)를 실행하고 관리한다.
-
-- 주요 기능
-    - 작업 관리(모니터링)
-    - 프로세스(컨테이너) 관리
-
-## 동작 설명
-
-### 사용자 요청과 요청 처리 흐름
-
-Client Request - (Using HTTP) - Spring Gateway - (Using gRPC) - Services
-
-### Debugging
-
-MSA 구조에 따른 오류(로그) 분석 어려움을 Jaeger(예거) 활용한다.
-Spring Cloud Gateway, Service 들에 적용하여 요청 처리 중 오류가 발생한 부분을 쉽게 파악할 수 있다.
-
-### Logging
-
-## 개발 가이드
-
-Gradle 을 활용한 멀티 프로젝트 구조로 빌드와 관련하여 공통된 부분을 처리하기 위해 프로젝트의 성격을 2가지로 분류하였습니다.
-
-- Lib
-- Service(Application)
-
-각 프로젝트(모듈) 내부에서는 상위의 settings.gradle.kts에 의해 build-logic을 로드하고
-각 프로젝트(모듈)의 성격(lib, service)에 따라 설정과 의존성(dependencies)을 동일하게 적용받게 됩니다.
-
-동일한 빌드 로직은 로그와 같이 광범위하게 사용되는 의존성 라이브러이의 변경을 용이하게 할 것이며,
-신규 모듈(프로젝트)의 생성을 보다 신속하고 편리하게 할 것입니다.
-
-추후 보다 발전된 형태의 빌드 로직 구축으로 이어져 정적 분석(코드 스타일, 보안, 유닛테스트 통합 업로드)과
-자동 배포(Maven Publish), 버전 관리를 수행할 수 있도록 할 것입니다.
-
-### 빌드 로직 구성
-
-```md
-.
-├── build-logic
-│   └── build.gradle.kts        - build-logic을 위한 빌드 설정
-│   └── settings.gradle.kts     - build-logic을 root로 하는 프로젝트 설정
-│   └── src
-│       └── main
-│           └── kotlin
-│               └── mobigen.java-application-conventions.gradle.kts            - application 공통 설정 
-│               └── mobigen.java-common-conventions.gradle.kts                 - application, library 의 공통 설정 
-│               └── mobigen.java-library-conventions.gradle.kts                - library 공통 설정 
-├── libs
-│   └── settings.gradle.kts     - libs를 root로 하는 프로젝트 설정, build-logic을 로드 (includeBuild)
-│   └── list                    - 멀티 프로젝트 구조와 Gradle Plugin 공유 구조 설명을 위한 Sample 
-├── services
-│   └── settings.gradle.kts     - 여타 설정과 다르게 내부에서 사용되는 라이브러리 의존성 설정이 추가됨(libs, utilities)
-│   └── sample                  - 멀티 프로젝트 구조와 Gradle Plugin 공유 구조 설명을 위한 Sample
-└── utilities
-    └── settings.gradle.kts
-    └── list                    - 멀티 프로젝트 구조와 Gradle Plugin 공유 구조 설명을 위한 Sample
+```bash
+helm repo add trino https://trinodb.github.io/charts/
 ```
 
-### CI/CD
+- helm install
 
-- SonarQube
-    ```bash
-    $./gradlew sonarqube \
-        -Dsonar.projectKey=Data-Fabric-Platform \
-        -Dsonar.host.url=https://sonarqube.iris.tools \
-        -Dsonar.login=7f787dc2bb7f8aeb334537b0140c32c1a9eee8f9
-    ```
+```bash
+helm install dolphin-dependencies dependencies/ -n <namespace> --create-namespace 
+```
 
-    ```groovy
-    plugins {
-      id "org.sonarqube" version "3.0"
-    }
-    //...
-    ```
-- Dockerfile(Build)
-- Jenkins
-- Helm
+- helm update
 
-## 배포
+```bash
+helm upgrade dolphin-dependencies dependencies/ -n <namespace>
+```
+
+#### Minikube 사용시 참고 사항
+
+minikube 는 docker 환경에서 동작하게 된다. 즉, 모든 컨테이너 이미지들은 Docker-in-Docker 형태로 동작하게 된다.
+
+이러한 상황에서 발생 하는 문제
+
+- k8s Service 설정으로 NodePort 를 지정 했는데, 해당 NodePort 로 연결이 안되는 상황이 발생
+    - NodePort 는 minikube 컨테이너 내부에서 열린 것이기 때문
+- pv 를 이용해서 hostPath 로 데이터 마운트를 했는데, local 에서 안보인다.
+    - minikube 내에서 마운트 한 것이므로 minikube 안에 있다.
+
+minikube 는 이러한 상황을 해결하기 위한 몇 가지 명령을 제공한다. [[minikube commands docs](https://minikube.sigs.k8s.io/docs/commands/)]
+
+아래는 위 두가지 문제를 해결하기 위한 명령어
+
+1. NodePort 열기
+    - 모든 Service port 열기
+        - `minikube service -n <namespace> --all`
+    - 특정 Service port 열기
+        - `minikube service -n <namespace> <svc-name>`
+2. 마운트 로컬로 연결하기
+    - `minikube mount $HOME/libs:/data/libs`
