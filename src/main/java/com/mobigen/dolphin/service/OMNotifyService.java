@@ -27,7 +27,8 @@ public class OMNotifyService {
     public String runDBService(OMNotifyDto omNotifyDto) throws JsonProcessingException {
         if (omNotifyDto.getEventType().equals(OMNotifyDto.EventType.ENTITY_CREATED)) {
             log.info("Create catalog of {}", omNotifyDto.getEntityId());
-            var connInfo = openMetadataRepository.getConnectorInfo(omNotifyDto.getEntityId());
+            var connInfo = openMetadataRepository.getConnectorInfo(omNotifyDto.getEntityId(),
+                    EntityType.DATABASE_SERVICE);
             var catalog = modelService.getOrCreateTrinoCatalog(connInfo);
             return "Success to create catalog [" + catalog + "]";
         } else if (omNotifyDto.getEventType().equals(OMNotifyDto.EventType.ENTITY_DELETED)) {

@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 /**
  * <p>
  * Created by fwani.
@@ -22,4 +24,6 @@ public class CreateModelWithFileDto {
     private String path;
     @Schema(description = "Id of file")
     private String fileId;
+    private String fullyQualifiedName;
+    private UUID storageId;
 }

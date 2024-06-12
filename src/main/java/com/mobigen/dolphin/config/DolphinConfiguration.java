@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Map;
+
 import static com.mobigen.dolphin.util.Functions.convertKeywordName;
 
 /**
@@ -23,6 +25,7 @@ import static com.mobigen.dolphin.util.Functions.convertKeywordName;
 public class DolphinConfiguration {
     private Model model;
     private OpenMetadataConfig openMetadata;
+    private HiveMetastoreConfig hiveMetastore;
 
     @Getter
     @Setter
@@ -30,7 +33,7 @@ public class DolphinConfiguration {
         private String prefix;
         private String catalog;
         private ModelSchema schema;
-        private String databaseSchema;
+        private String dbSchema;
         private String fileSchema;
         private Character specialChar = '"';
 
@@ -39,8 +42,9 @@ public class DolphinConfiguration {
         }
 
         public String getDBSchema() {
-            return convertKeywordName(databaseSchema);
+            return convertKeywordName(dbSchema);
         }
+
         public String getFileSchema() {
             return convertKeywordName(fileSchema);
         }
@@ -60,4 +64,13 @@ public class DolphinConfiguration {
         private String apiUrl;
         private String botToken;
     }
+
+
+    @Getter
+    @Setter
+    public static class HiveMetastoreConfig {
+        private String uri;
+        private Map<String, String> options;
+    }
+
 }

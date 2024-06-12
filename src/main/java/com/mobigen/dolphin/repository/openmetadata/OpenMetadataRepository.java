@@ -1,6 +1,7 @@
 package com.mobigen.dolphin.repository.openmetadata;
 
 import com.mobigen.dolphin.config.DolphinConfiguration;
+import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import jakarta.validation.constraints.AssertTrue;
@@ -26,9 +27,14 @@ public class OpenMetadataRepository {
     private final DolphinConfiguration dolphinConfiguration;
 
     @AssertTrue(message = "Fail to get databaseService information from OpenMetadata")
-    public OMDBServiceEntity getConnectorInfo(UUID id) {
+    public OMDBServiceEntity getConnectorInfo(UUID id, EntityType entityType) {
+        String url;
+        if (entityType.equals(EntityType.DATABASE_SERVICE)) {
+            url = dolphinConfiguration.getOpenMetadata().getApiUrl() + "/v1/services/databaseServices/" + id;
+        } else {
+            url = dolphinConfiguration.getOpenMetadata().getApiUrl() + "/v1/services/storageServices/" + id;
+        }
         var webClient = WebClient.builder().build();
-        var url = dolphinConfiguration.getOpenMetadata().getApiUrl() + "/v1/services/databaseServices/" + id;
         var response = webClient.get()
                 .uri(url)
                 .header("Authorization", dolphinConfiguration.getOpenMetadata().getBotToken())

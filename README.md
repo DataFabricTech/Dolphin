@@ -38,6 +38,20 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 - 히스토리
     - 쿼리 실행
     - 생성 / 삭제
+- OpenMetadata 연동
+    - notification 생성
+        - POST /v1/events/subscriptions
+        - GET /v1/events/subscriptions/name/{eventSubscriptionName}
+    - bot 생성 및 bot token 사용
+        - POST /v1/bots
+        - GET /v1/bots/name/{name}
+        - GET /v1/users/auth-mechanism/{id}
+    - dataservices 조회
+        - GET /v1/services/databaseServices/name/{name}
+        - GET /v1/services/databaseServices/{id}
+    - tables 조회
+        - GET /v1/tables/name/{fqn}
+        - GET /v1/tables/{id}
 
 ## Develop Guide
 

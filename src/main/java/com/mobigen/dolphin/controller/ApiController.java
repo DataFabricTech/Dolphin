@@ -10,6 +10,7 @@ import com.mobigen.dolphin.service.QueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,8 +43,9 @@ public class ApiController {
     public ModelDto addModel(@RequestBody CreateModelDto createModelDto) {
         return modelService.createModel(createModelDto);
     }
+
     @Operation(summary = "Create dataModel with File", description = "Create a dataModel by method (MODEL, QUERY, CONNECTOR)")
-    @PostMapping("/model/file")
+    @PostMapping(value = "/model/file", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ModelDto addModelWithFile(@RequestPart CreateModelWithFileDto createModelDto,
                                      @RequestPart MultipartFile file
     ) {

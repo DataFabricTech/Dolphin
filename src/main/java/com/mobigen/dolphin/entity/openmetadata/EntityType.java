@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public enum EntityType {
     DATABASE_SERVICE("databaseService"),
+    STORAGE_SERVICE("storageService"),
     DATABASE_SCHEMA("databaseSchema"),
     DATABASE("database"),
     TABLE("table"),

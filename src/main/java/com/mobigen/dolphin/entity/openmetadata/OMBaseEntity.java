@@ -13,11 +13,13 @@ import java.util.UUID;
  */
 @Data
 public class OMBaseEntity {
-    private UUID id;
-    private EntityType type;
-    private String name;
-    private String fullyQualifiedName;
-    private String displayName;
     private Boolean deleted;
+    private String description;
+    private String displayName;
+    private String fullyQualifiedName;
     private String href;
+    private UUID id;
+    private Boolean inherited;
+    private String name;
+    private EntityType type;
 }
