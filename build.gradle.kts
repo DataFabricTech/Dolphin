@@ -40,13 +40,15 @@ dependencies {
     implementation("mysql:mysql-connector-java:8.0.33")
 
     // - trino
-    implementation("io.trino:trino-jdbc:435")
-    compileOnly("io.trino:trino-spi:435")
+    implementation("io.trino:trino-jdbc:450")
+    compileOnly("io.trino:trino-spi:450")
     implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha")
     implementation("io.opentelemetry:opentelemetry-api:1.38.0")
 
     // - open metadata
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+//    implementation("org.open-metadata:openmetadata-spec:1.4.1")
+//    implementation("org.open-metadata:openmetadata-service:1.4.1")
 
     // json?
     implementation("org.json:json:20240303")

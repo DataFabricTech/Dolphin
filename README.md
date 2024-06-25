@@ -5,15 +5,16 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 ## Tools
 
 - Gradle 8.2 (Kotlin)
-- Java 17
+- Java 21
 - Spring Boot 3.3.0
     - spark 와 spring boot 3.x 간 dependency 문제가 있음
         - spark 대신 trino 사용 시 spring boot 3.x 버전 사용 가능
     - spring-boot-starter-data-jpa
     - spring-boot-starter-amqp
-- Trino 435 (Java 17 을 지원하는 마지막 버전)
+- Trino 450
 - Hive Metastore
 - MinIO
+- Jaeger
 
 ## Features
 
@@ -52,6 +53,14 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
     - tables 조회
         - GET /v1/tables/name/{fqn}
         - GET /v1/tables/{id}
+
+## Architecture
+
+![use case](./docs/imgs/Architecture.png)
+
+## Use Cases
+
+![use case](./docs/imgs/Dolphin_UseCase.png)
 
 ## Develop Guide
 
