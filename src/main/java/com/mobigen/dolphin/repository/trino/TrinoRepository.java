@@ -5,6 +5,7 @@ import com.mobigen.dolphin.dto.response.ModelDto;
 import com.mobigen.dolphin.dto.response.QueryResultDTO;
 import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.exception.SqlParseException;
+import com.opencsv.CSVWriter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -136,22 +137,34 @@ public class TrinoRepository {
 
         @Override
         public Void extractData(final ResultSet rs) throws SQLException, DataAccessException {
-            try (PrintWriter printWriter = new PrintWriter(outputStream, true)) {
+            try (PrintWriter printWriter = new PrintWriter(outputStream, true);
+                 CSVWriter writer = new CSVWriter(printWriter)) {
+                // create CSVWriter object filewriter object as parameter
                 var resultSetMetadata = rs.getMetaData();
                 var columnCount = resultSetMetadata.getColumnCount();
-                writeHeader(resultSetMetadata, columnCount, printWriter);
-                while (rs.next()) {
-                    for (int i = 1; i <= columnCount; i++) {
-                        var value = rs.getObject(i);
-                        var strValue = value == null ? "" : value.toString();
-                        printWriter.write(strValue.contains(",") ? ESCAPE_CHAR + strValue + ESCAPE_CHAR : strValue);
-                        if (i != columnCount) {
-                            printWriter.write(DELIMITER);
-                        }
-                    }
-                    printWriter.println();
+                for (int i = 0; i < columnCount; i++) {
+                    var columnName = resultSetMetadata.getColumnName(i + 1);
+                    var columnType = resultSetMetadata.getColumnType(i + 1);
+
                 }
-                printWriter.flush();
+                writer.writeAll(rs, true);
+//                writeHeader(resultSetMetadata, columnCount, printWriter);
+//                while (rs.next()) {
+//                    List<String> row = new ArrayList<>();
+//                    for (int i = 1; i <= columnCount; i++) {
+//                        var value = rs.getObject(i);
+//                        var strValue = value == null ? "" : value.toString();
+//                        row.add(strValue);
+//                        printWriter.write(strValue.contains(",") ? ESCAPE_CHAR + strValue + ESCAPE_CHAR : strValue);
+//                        if (i != columnCount) {
+//                            printWriter.write(DELIMITER);
+//                        }
+//                    }
+//                    printWriter.println();
+//                }
+//                printWriter.flush();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
             return null;
         }

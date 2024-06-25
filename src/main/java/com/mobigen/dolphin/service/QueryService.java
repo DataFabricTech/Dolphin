@@ -10,18 +10,13 @@ import com.mobigen.dolphin.entity.local.JobEntity;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
+import com.mobigen.dolphin.util.CsvSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 /**
@@ -91,18 +86,6 @@ public class QueryService {
         if (job.isEmpty()) {
             throw new RuntimeException("job not found");
         }
-        List<List<Object>> records = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(job.get().getResultPath()))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                records.add(Arrays.asList(values));
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return QueryResultDTO.builder()
-                .rows(records)
-                .build();
+        return CsvSerializer.readCsv(job.get().getResultPath());
     }
 }

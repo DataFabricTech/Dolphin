@@ -54,6 +54,9 @@ dependencies {
     implementation("org.json:json:20240303")
     runtimeOnly("com.h2database:h2")
 
+    // csv
+    implementation("com.opencsv:opencsv:5.9")
+
     // parquet
 //    implementation("org.apache.parquet:parquet-avro:1.13.1")
 //    implementation("org.apache.hadoop:hadoop-common:3.3.6")
