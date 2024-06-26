@@ -10,7 +10,7 @@ import com.mobigen.dolphin.entity.local.JobEntity;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
-import com.mobigen.dolphin.util.CsvSerializer;
+import com.mobigen.dolphin.util.CsvDeSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.antlr.v4.runtime.CharStreams;
@@ -86,6 +86,6 @@ public class QueryService {
         if (job.isEmpty()) {
             throw new RuntimeException("job not found");
         }
-        return CsvSerializer.readCsv(job.get().getResultPath());
+        return CsvDeSerializer.readCsv(job.get().getResultPath());
     }
 }

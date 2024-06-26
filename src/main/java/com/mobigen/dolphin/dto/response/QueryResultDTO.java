@@ -1,5 +1,6 @@
 package com.mobigen.dolphin.dto.response;
 
+import com.mobigen.dolphin.util.DolphinType;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,7 +26,7 @@ public class QueryResultDTO {
     @Builder
     public static class Column {
         private String name;
-        private String type;
+        private DolphinType type;
         private String comment;
     }
 }

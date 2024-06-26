@@ -51,7 +51,7 @@ dependencies {
 //    implementation("org.open-metadata:openmetadata-service:1.4.1")
 
     // json?
-    implementation("org.json:json:20240303")
+    implementation("com.googlecode.json-simple:json-simple:1.1.1")
     runtimeOnly("com.h2database:h2")
 
     // csv

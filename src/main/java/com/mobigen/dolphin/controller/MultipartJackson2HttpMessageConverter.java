@@ -1,4 +1,4 @@
-package com.mobigen.dolphin.util;
+package com.mobigen.dolphin.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
