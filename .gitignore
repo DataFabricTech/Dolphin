@@ -56,3 +56,5 @@ gradle/wrapper/
 
 *.db
 Chart.lock
+dev/**/*.csv
+dev/**/*.json

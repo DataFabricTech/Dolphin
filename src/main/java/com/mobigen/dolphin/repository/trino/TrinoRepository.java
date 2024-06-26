@@ -76,7 +76,6 @@ public class TrinoRepository {
             return QueryResultDTO.builder()
                     .columns(columns)
                     .rows(rows)
-                    .totalCount(rows.size())
                     .build();
         } catch (UncategorizedSQLException e) {
             log.error(e.getMessage(), e);
