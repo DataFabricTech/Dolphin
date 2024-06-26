@@ -10,8 +10,8 @@ package com.mobigen.dolphin.util;
 public enum DolphinType {
     BOOL("BOOL"),
     TEXT("TEXT"),
-    INT("INT"),
-    LONG("LONG"),
+    INTEGER("INTEGER"),
+    BIGINT("BIGINT"),
     REAL("REAL"),
     UNDEFINED("UNDEFINED");;
 

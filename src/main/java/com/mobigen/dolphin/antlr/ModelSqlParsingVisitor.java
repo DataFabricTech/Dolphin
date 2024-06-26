@@ -9,7 +9,6 @@ import com.mobigen.dolphin.util.Functions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -22,7 +21,11 @@ import java.util.stream.Collectors;
 import static com.mobigen.dolphin.util.Functions.convertKeywordName;
 
 /**
- * <p>
+ * <pre>
+ * ANTLR4 로 인식된 SQL 을
+ * Trino SQL 로 변환 하기 위한 코드
+ * <a href=" https://trino.io/docs/current/sql/select.html">trino SELECT query document</a>
+ * </pre>
  * Created by fwani.
  *
  * @version 0.0.1
@@ -110,7 +113,14 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
         }
         return combineKeywordsAndPad(ctx.K_SELECT().getText())
                 + ctx.result_column().stream().map(this::visitResult_column)
-                .collect(Collectors.joining(","));
+                .collect(Collectors.joining(", "));
+    }
+
+    @Override
+    public String visitFunction_arguments(ModelSqlParser.Function_argumentsContext ctx) {
+        return ctx.children.stream()
+                .map(x -> x.accept(this))
+                .collect(Collectors.joining(" "));
     }
 
     @Override
@@ -138,7 +148,9 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
         if (ctx == null) {
             return "";
         }
-        return " group by " + ctx.expr().stream().map(RuleContext::getText).collect(Collectors.joining(", "));
+        return " " + ctx.children.stream()
+                .map(x -> x.accept(this))
+                .collect(Collectors.joining(" "));
     }
 
     @Override
@@ -146,7 +158,16 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
         if (ctx == null) {
             return "";
         }
-        return " order by " + ctx.ordering_term().stream().map(RuleContext::getText).collect(Collectors.joining(", "));
+        return " order by " + ctx.ordering_term().stream()
+                .map(this::visitOrdering_term)
+                .collect(Collectors.joining(", "));
+    }
+
+    @Override
+    public String visitOrdering_term(ModelSqlParser.Ordering_termContext ctx) {
+        return ctx.children.stream()
+                .map(x -> x.accept(this))
+                .collect(Collectors.joining(" "));
     }
 
     @Override
@@ -154,7 +175,26 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
         if (ctx == null) {
             return "";
         }
-        return " limit " + ctx.INTEGER_LITERAL().stream().map(ParseTree::getText).collect(Collectors.joining(", "));
+        var builder = new StringBuilder();
+        TerminalNode limitValue;
+        if (ctx.COMMA() != null) {
+            builder.append(" offset ")
+                    .append(ctx.INTEGER_LITERAL(0))
+                    .append(" ");
+            limitValue = ctx.INTEGER_LITERAL(1);
+        } else if (ctx.K_OFFSET() != null) {
+            builder.append(" offset ")
+                    .append(ctx.INTEGER_LITERAL(1))
+                    .append(" ");
+            limitValue = ctx.INTEGER_LITERAL(0);
+        } else {
+            limitValue = ctx.INTEGER_LITERAL(0);
+        }
+        builder.append(ctx.K_LIMIT())
+                .append(" ")
+                .append(limitValue);
+
+        return builder.toString();
     }
 
     @Override
@@ -182,8 +222,10 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
     public String visitResult_column(ModelSqlParser.Result_columnContext ctx) {
         if (ctx.expr() != null) {
             var expr = visitExpr(ctx.expr());
-            var alias = visitColumn_alias(ctx.column_alias());
-            return expr + " as " + alias;
+            if (ctx.column_alias() != null) {
+                return expr + " as " + visitColumn_alias(ctx.column_alias());
+            }
+            return expr;
         } else if (ctx.STAR() != null) {
             return "*";
         } else {

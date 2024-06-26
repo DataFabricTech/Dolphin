@@ -37,9 +37,9 @@ public class Functions {
         if (Types.BIT == colType) {
             return DolphinType.BOOL;
         } else if (Types.TINYINT == colType || Types.SMALLINT == colType || Types.INTEGER == colType) {
-            return DolphinType.INT;
+            return DolphinType.INTEGER;
         } else if (Types.BIGINT == colType) {
-            return DolphinType.LONG;
+            return DolphinType.BIGINT;
         } else if (Types.FLOAT == colType || Types.DOUBLE == colType || Types.REAL == colType || Types.NUMERIC == colType || Types.DECIMAL == colType) {
             return DolphinType.REAL;
         } else {
@@ -51,8 +51,8 @@ public class Functions {
         return value.isEmpty()
                 ? null
                 : switch (type) {
-            case INT -> Integer.parseInt(value);
-            case LONG -> Long.parseLong(value);
+            case INTEGER -> Integer.parseInt(value);
+            case BIGINT -> Long.parseLong(value);
             case BOOL -> Boolean.parseBoolean(value);
             case REAL -> Double.parseDouble(value);
             default -> value;
