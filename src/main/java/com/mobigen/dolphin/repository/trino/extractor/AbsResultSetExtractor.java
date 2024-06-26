@@ -26,12 +26,11 @@ public abstract class AbsResultSetExtractor<T> implements ResultSetExtractor<T> 
     protected AbsResultSetExtractor(UUID jobId) {
         this.jobId = jobId;
         prefix = "dev/" + jobId;
-        createDirectories(prefix);
         dataPath = new ClassPathResource(prefix + "/data.csv");
         schemaPath = new ClassPathResource(prefix + "/schema.json");
     }
 
-    private void createDirectories(String prefix) {
+    protected void createDirectories(String prefix) {
         try {
             Files.createDirectories(Path.of(prefix));
         } catch (IOException e) {

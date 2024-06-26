@@ -1,0 +1,5 @@
+{
+  "product": "TEXT",
+  "series": "TEXT",
+  "sales_price": "INTEGER"
+}
