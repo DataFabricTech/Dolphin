@@ -29,6 +29,7 @@ object Dependencies {
         const val PLATFORM_LAUNCH = "org.junit.platform:junit-platform-launcher:${Versions.JUNIT_PLATFORM_LAUNCH}"
         const val JUPITER_ENGINE = "org.junit.jupiter:junit-jupiter-engine:${Versions.JUNIT_VER}"
         const val MOCKITO   = "org.mockito:mockito-core:${Versions.MOCKITO_VER}"
+        const val MOCKITO_JUPITER   = "org.mockito:mockito-junit-jupiter:${Versions.MOCKITO_VER}"
     }
 
     object Spring {

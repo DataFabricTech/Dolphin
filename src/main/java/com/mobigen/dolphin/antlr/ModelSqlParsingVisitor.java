@@ -190,8 +190,7 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
         } else {
             limitValue = ctx.INTEGER_LITERAL(0);
         }
-        builder.append(ctx.K_LIMIT())
-                .append(" ")
+        builder.append(" limit ")
                 .append(limitValue);
 
         return builder.toString();

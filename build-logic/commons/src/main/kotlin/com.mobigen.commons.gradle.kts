@@ -34,6 +34,7 @@ dependencies {
     testRuntimeOnly(Dependencies.JUNIT.JUPITER_ENGINE)
 //    testRuntimeOnly("org.junit.platform:junit-platform-reporting:1.10.1")
     testImplementation(Dependencies.JUNIT.MOCKITO)
+    testImplementation(Dependencies.JUNIT.MOCKITO_JUPITER)
 }
 
 tasks.named<Test>("test") {
