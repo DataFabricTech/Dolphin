@@ -19,7 +19,7 @@ parse
 
 // statements
 sql_stmt
-: (K_EXPLAIN (K_QUERY K_PLAN)?)? ( select_stmt
+: (K_EXPLAIN)? ( select_stmt
 //                                 | update_stmt
 //                                 | update_stmt_limited )
 )
@@ -125,7 +125,7 @@ join_clause
 ;
 
 ordering_term
-: expr (K_COLLATE collation_name)? (K_ASC | K_DESC)? (K_NULLS (K_FIRST | K_LAST))?
+: expr (K_ASC | K_DESC)? (K_NULLS (K_FIRST | K_LAST))?
 ;
 
 result_column
