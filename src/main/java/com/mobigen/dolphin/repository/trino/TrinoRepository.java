@@ -36,7 +36,8 @@ public class TrinoRepository {
     public List<ModelDto> getModelList() {
         // SHOW TABLES [ FROM schema ] [ LIKE pattern ]
         return trinoJdbcTemplate.query("show tables from " +
-                        dolphinConfiguration.getModel().getCatalog() + "." + dolphinConfiguration.getModel().getDBSchema(),
+                        dolphinConfiguration.getModel().getCatalog()
+                        + "." + dolphinConfiguration.getModel().getSchema().getDb(),
                 (rs, rowNum) -> ModelDto.builder()
                         .name(rs.getString("Table"))
                         .build());

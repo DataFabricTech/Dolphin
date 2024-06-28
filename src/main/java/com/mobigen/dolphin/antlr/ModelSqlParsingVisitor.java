@@ -60,10 +60,8 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
     @Override
     public String visitSql_stmt(ModelSqlParser.Sql_stmtContext ctx) {
         String explain = ctx.K_EXPLAIN() == null ? "" : ctx.K_EXPLAIN().getText();
-        String query = ctx.K_QUERY() == null ? "" : " " + ctx.K_QUERY().getText();
-        String plan = ctx.K_PLAN() == null ? "" : " " + ctx.K_PLAN().getText();
 
-        return explain + query + plan + visitSelect_stmt(ctx.select_stmt());
+        return explain + visitSelect_stmt(ctx.select_stmt());
     }
 
     @Override
