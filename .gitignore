@@ -58,3 +58,4 @@ gradle/wrapper/
 Chart.lock
 dev/**/*.csv
 dev/**/*.json
+*.bkp

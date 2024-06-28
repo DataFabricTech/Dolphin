@@ -50,6 +50,9 @@ dependencies {
 //    implementation("org.open-metadata:openmetadata-spec:1.4.1")
 //    implementation("org.open-metadata:openmetadata-service:1.4.1")
 
+    // jaeger
+    implementation("io.opentracing.contrib:opentracing-spring-jaeger-web-starter:3.1.2")
+
     // json?
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
     runtimeOnly("com.h2database:h2")

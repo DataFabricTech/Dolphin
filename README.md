@@ -56,11 +56,15 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 
 ## Architecture
 
-![use case](./docs/imgs/Architecture.png)
+![architecture](./docs/imgs/Architecture.png)
 
 ## Use Cases
 
 ![use case](./docs/imgs/Dolphin_UseCase.png)
+
+## SQL Syntax
+
+![sql syntax](./docs/imgs/SQL_Syntax.png)
 
 ## Develop Guide
 
