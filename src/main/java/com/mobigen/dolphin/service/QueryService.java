@@ -7,6 +7,8 @@ import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.QueryResultDTO;
 import com.mobigen.dolphin.entity.local.JobEntity;
+import com.mobigen.dolphin.exception.SqlParseException;
+import com.mobigen.dolphin.repository.local.FusionModelRepository;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
@@ -34,24 +36,28 @@ public class QueryService {
     private final DolphinConfiguration dolphinConfiguration;
     private final TrinoRepository trinoRepository;
     private final JobRepository jobRepository;
+    private final FusionModelRepository fusionModelRepository;
 
     private final AsyncService asyncService;
 
     public JobEntity createJob(ExecuteDto executeDto) {
-        log.info("Create job. origin sql: {}", executeDto.getQuery());
         var lexer = new ModelSqlLexer(CharStreams.fromString(executeDto.getQuery()));
         var tokens = new CommonTokenStream(lexer);
         var parser = new ModelSqlParser(tokens);
-        var visitor = new ModelSqlParsingVisitor(openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
+        log.info("Create job. origin sql: {}", executeDto.getQuery());
+        var job = JobEntity.builder()
+                .status(JobEntity.JobStatus.INIT)
+                .userQuery(executeDto.getQuery())
+                .build();
+        jobRepository.save(job);
+        var visitor = new ModelSqlParsingVisitor(job, openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
         var parseTree = parser.parse();
         var convertedQuery = visitor.visit(parseTree);
         log.info("Converted sql: {}", convertedQuery);
-        var job = JobEntity.builder()
-                .status(JobEntity.JobStatus.QUEUED)
-                .userQuery(executeDto.getQuery())
-                .convertedQuery(convertedQuery)
-                .build();
+        job.setStatus(JobEntity.JobStatus.QUEUED);
+        job.setConvertedQuery(convertedQuery);
         jobRepository.save(job);
+        fusionModelRepository.saveAll(visitor.getUsedModelHistory());
         return job;
     }
 
@@ -59,10 +65,16 @@ public class QueryService {
         var job = createJob(executeDto);
         job.setStatus(JobEntity.JobStatus.RUNNING);
         jobRepository.save(job);
-        var result = trinoRepository.executeQuery2(job.getConvertedQuery());
-        job.setStatus(JobEntity.JobStatus.FINISHED);
-        jobRepository.save(job);
-        return result;
+        try {
+            var result = trinoRepository.executeQuery2(job.getConvertedQuery());
+            job.setStatus(JobEntity.JobStatus.FINISHED);
+            jobRepository.save(job);
+            return result;
+        } catch (SqlParseException e) {
+            job.setStatus(JobEntity.JobStatus.FAILED);
+            jobRepository.save(job);
+            throw e;
+        }
     }
 
     public QueryResultDTO executeAsync(ExecuteDto executeDto) {

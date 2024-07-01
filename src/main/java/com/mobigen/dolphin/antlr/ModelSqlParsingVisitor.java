@@ -2,6 +2,8 @@ package com.mobigen.dolphin.antlr;
 
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
+import com.mobigen.dolphin.entity.local.FusionModelEntity;
+import com.mobigen.dolphin.entity.local.JobEntity;
 import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
@@ -13,6 +15,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,12 +38,14 @@ import static com.mobigen.dolphin.util.Functions.convertKeywordName;
 @Getter
 @RequiredArgsConstructor
 public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
+    private final JobEntity job;
     private final OpenMetadataRepository openMetadataRepository;
     private final DolphinConfiguration dolphinConfiguration;
     private final List<ExecuteDto.ReferenceModel> referenceModels;
 
     private final char SPECIAL_CHAR = '"';
     private final Map<String, String> modelCache = new HashMap<>();
+    private final List<FusionModelEntity> usedModelHistory = new ArrayList<>();
 
     @Override
     public String visitErrorNode(ErrorNode node) {
@@ -276,6 +281,12 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
                     }
                     var model = catalogName + "." + schemaName + "." + tableInfo.getName();
                     modelCache.put(key, model);
+                    usedModelHistory.add(FusionModelEntity.builder()
+                            .job(job)
+                            .modelIdOfOM(referenceModel.getId())
+                            .fullyQualifiedName(referenceModel.getFullyQualifiedName())
+                            .trinoModelName(model)
+                            .build());
                     return model;
                 }
             }
@@ -286,7 +297,12 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
         var schemaName = visitSchema_name(ctx.schema_name());
         var modelName = convertKeywordName(ctx.model_name().getText());
         log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
-        return catalogName + "." + schemaName + "." + modelName;
+        var model = catalogName + "." + schemaName + "." + modelName;
+        usedModelHistory.add(FusionModelEntity.builder()
+                .job(job)
+                .trinoModelName(model)
+                .build());
+        return model;
     }
 
     @Override

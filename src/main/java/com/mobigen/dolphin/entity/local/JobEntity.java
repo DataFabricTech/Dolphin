@@ -53,6 +53,7 @@ public class JobEntity {
     private WorkerEntity worker;
 
     public enum JobStatus {
+        INIT,
         QUEUED,
         RUNNING,
         FINISHED,
