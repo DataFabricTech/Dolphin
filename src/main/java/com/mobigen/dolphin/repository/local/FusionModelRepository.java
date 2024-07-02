@@ -17,12 +17,13 @@ import java.util.UUID;
  * @since 0.0.1
  */
 public interface FusionModelRepository extends JpaRepository<FusionModelEntity, Long> {
-    @Query("SELECT distinct new com.mobigen.dolphin.dto.response.RecommendModelDto(a.modelIdOfOM, a.fullyQualifiedName)" +
+    @Query("SELECT new com.mobigen.dolphin.dto.response.RecommendModelDto(a.modelIdOfOM, a.fullyQualifiedName, count(a.id))" +
             " FROM FusionModelEntity a" +
             " where a.job in (Select b from JobEntity b where b.status = 'FINISHED' and b.id in (" +
             "   SELECT job.id " +
             "   FROM FusionModelEntity " +
             "   WHERE fullyQualifiedName = :fqn or modelIdOfOM = :modelId )" +
-            " )")
+            " )" +
+            " group by a.modelIdOfOM, a.fullyQualifiedName")
     List<RecommendModelDto> findAllByFullyQualifiedNameOrModelIdOfOM(@Param("fqn") String fullyQualifiedName, @Param("modelId") UUID modelId);
 }

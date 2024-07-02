@@ -17,4 +17,5 @@ import java.util.UUID;
 public class RecommendModelDto {
     private UUID modelId;
     private String fqn;
+    private Long count;
 }
