@@ -29,23 +29,30 @@ public class CsvDeSerializer {
             var jsonObject = (JSONObject) parser.parse(schemaReader);
             String[] nextLine;
             var queryResultDtoBuilder = QueryResultDTO.builder();
-            var columns = Arrays.stream(dataReader.readNext()).map(x ->
-                            QueryResultDTO.Column.builder()
-                                    .name(x)
-                                    .type(DolphinType.fromValue((String) jsonObject.get(x)))
-                                    .build())
-                    .toList();
-            queryResultDtoBuilder.columns(columns);
+            List<QueryResultDTO.Column> columns = new ArrayList<>();
+            List<String> columnNames = new ArrayList<>();
+            Arrays.stream(dataReader.readNext()).forEach(x -> {
+                columns.add(QueryResultDTO.Column.builder()
+                        .name(x)
+                        .dataType(DolphinType.fromValue((String) jsonObject.get(x)))
+                        .build());
+                columnNames.add(x);
+            });
             List<List<Object>> records = new ArrayList<>();
             while ((nextLine = dataReader.readNext()) != null) {
                 List<Object> record = new ArrayList<>();
                 for (int i = 0; i < nextLine.length; i++) {
-                    record.add(Functions.convertType(nextLine[i], columns.get(i).getType()));
+                    record.add(Functions.convertType(nextLine[i], columns.get(i).getDataType()));
                 }
                 records.add(record);
             }
+
             return queryResultDtoBuilder
-                    .rows(records)
+                    .columns(columns)
+                    .resultData(QueryResultDTO.ResultData.builder()
+                            .columns(columnNames)
+                            .rows(records)
+                            .build())
                     .build();
         } catch (CsvValidationException | IOException | ParseException e) {
             throw new RuntimeException(e);

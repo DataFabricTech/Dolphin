@@ -23,10 +23,10 @@ class CsvDeSerializerTest {
         var result = CsvDeSerializer.readCsv(path.getPath());
         assertEquals(7, result.getTotalCount());
         assertEquals(List.of(
-                QueryResultDTO.Column.builder().name("product").type(DolphinType.TEXT).build(),
-                QueryResultDTO.Column.builder().name("series").type(DolphinType.TEXT).build(),
-                QueryResultDTO.Column.builder().name("sales_price").type(DolphinType.INTEGER).build()
+                QueryResultDTO.Column.builder().name("product").dataType(DolphinType.TEXT).build(),
+                QueryResultDTO.Column.builder().name("series").dataType(DolphinType.TEXT).build(),
+                QueryResultDTO.Column.builder().name("sales_price").dataType(DolphinType.INTEGER).build()
         ), result.getColumns());
-        assertEquals(List.of("GTX Basic", "GTX", 550), result.getRows().getFirst());
+        assertEquals(List.of("GTX Basic", "GTX", 550), result.getResultData().getRows().getFirst());
     }
 }

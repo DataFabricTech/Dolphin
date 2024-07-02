@@ -56,16 +56,19 @@ public class TrinoRepository {
     public QueryResultDTO executeQuery2(String sql) {
         // get model data
         List<QueryResultDTO.Column> columns = new ArrayList<>();
+        List<String > columnNames = new ArrayList<>();
         try {
             var rows = trinoJdbcTemplate.query(sql, ((rs, rowNum) -> {
                 var rsmd = rs.getMetaData();
                 int numberOfColumns = rsmd.getColumnCount();
                 if (rowNum == 0) {
                     for (int i = 1; i <= numberOfColumns; i++) {
+                        var name = rsmd.getColumnName(i);
                         columns.add(QueryResultDTO.Column.builder()
-                                .name(rsmd.getColumnName(i))
-                                .type(Functions.getDolphinType(rsmd.getColumnType(i)))
+                                .name(name)
+                                .dataType(Functions.getDolphinType(rsmd.getColumnType(i)))
                                 .build());
+                        columnNames.add(name);
                     }
                 }
                 List<Object> row = new ArrayList<>();
@@ -76,7 +79,10 @@ public class TrinoRepository {
             }));
             return QueryResultDTO.builder()
                     .columns(columns)
-                    .rows(rows)
+                    .resultData(QueryResultDTO.ResultData.builder()
+                            .columns(columnNames)
+                            .rows(rows)
+                            .build())
                     .build();
         } catch (UncategorizedSQLException e) {
             log.error(e.getMessage(), e);

@@ -3,7 +3,6 @@ package com.mobigen.dolphin.dto.response;
 import com.mobigen.dolphin.util.DolphinType;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,15 +19,22 @@ import java.util.UUID;
 public class QueryResultDTO {
     private UUID jobId;
     private List<Column> columns;
-    private List<List<Object>> rows;
+    private ResultData resultData;
     private int totalCount;
 
     @Data
     @Builder
     public static class Column {
         private String name;
-        private DolphinType type;
+        private DolphinType dataType;
         private String comment;
+    }
+
+    @Data
+    @Builder
+    public static class ResultData {
+        private List<String> columns;
+        private List<List<Object>> rows;
     }
 
     /**
@@ -37,9 +43,9 @@ public class QueryResultDTO {
      * Intellij can not recognize this is useful.
      */
     public static class QueryResultDTOBuilder {
-        public QueryResultDTOBuilder rows(List<List<Object>> rows) {
-            this.rows = rows;
-            this.totalCount = rows.size();
+        public QueryResultDTOBuilder resultData(ResultData resultData) {
+            this.resultData = resultData;
+            this.totalCount = resultData.rows.size();
             return this;
         }
     }

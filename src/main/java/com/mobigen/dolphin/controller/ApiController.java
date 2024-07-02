@@ -60,7 +60,7 @@ public class ApiController {
 
     @Operation(summary = "Async Execute Query using DataModel")
     @PostMapping("/query/async/execute")
-    public Object asyncExecute(@RequestBody ExecuteDto executeDto) {
+    public QueryResultDTO asyncExecute(@RequestBody ExecuteDto executeDto) {
         return queryService.executeAsync(executeDto);
     }
 
