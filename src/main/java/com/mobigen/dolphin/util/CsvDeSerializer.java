@@ -1,6 +1,6 @@
 package com.mobigen.dolphin.util;
 
-import com.mobigen.dolphin.dto.response.QueryResultDTO;
+import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import org.json.simple.JSONObject;
@@ -21,18 +21,18 @@ import java.util.List;
  * @since 0.0.1
  */
 public class CsvDeSerializer {
-    public static QueryResultDTO readCsv(String directoryPath) {
+    public static QueryResultDto readCsv(String directoryPath) {
         var parser = new JSONParser();
         try (var dataReader = new CSVReader(new FileReader(directoryPath + "/data.csv"));
              var schemaReader = new FileReader(directoryPath + "/schema.json")
         ) {
             var jsonObject = (JSONObject) parser.parse(schemaReader);
             String[] nextLine;
-            var queryResultDtoBuilder = QueryResultDTO.builder();
-            List<QueryResultDTO.Column> columns = new ArrayList<>();
+            var queryResultDtoBuilder = QueryResultDto.builder();
+            List<QueryResultDto.Column> columns = new ArrayList<>();
             List<String> columnNames = new ArrayList<>();
             Arrays.stream(dataReader.readNext()).forEach(x -> {
-                columns.add(QueryResultDTO.Column.builder()
+                columns.add(QueryResultDto.Column.builder()
                         .name(x)
                         .dataType(DolphinType.fromValue((String) jsonObject.get(x)))
                         .build());
@@ -49,7 +49,7 @@ public class CsvDeSerializer {
 
             return queryResultDtoBuilder
                     .columns(columns)
-                    .resultData(QueryResultDTO.ResultData.builder()
+                    .resultData(QueryResultDto.ResultData.builder()
                             .columns(columnNames)
                             .rows(records)
                             .build())

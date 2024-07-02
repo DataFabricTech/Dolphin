@@ -5,7 +5,7 @@ import com.mobigen.dolphin.antlr.ModelSqlParser;
 import com.mobigen.dolphin.antlr.ModelSqlParsingVisitor;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
-import com.mobigen.dolphin.dto.response.QueryResultDTO;
+import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.entity.local.JobEntity;
 import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
@@ -61,7 +61,7 @@ public class QueryService {
         return job;
     }
 
-    public QueryResultDTO execute(ExecuteDto executeDto) {
+    public QueryResultDto execute(ExecuteDto executeDto) {
         var job = createJob(executeDto);
         job.setStatus(JobEntity.JobStatus.RUNNING);
         jobRepository.save(job);
@@ -77,10 +77,10 @@ public class QueryService {
         }
     }
 
-    public QueryResultDTO executeAsync(ExecuteDto executeDto) {
+    public QueryResultDto executeAsync(ExecuteDto executeDto) {
         var job = createJob(executeDto);
         asyncService.executeAsync(job);
-        return QueryResultDTO.builder()
+        return QueryResultDto.builder()
                 .jobId(job.getId())
                 .build();
     }
@@ -93,7 +93,7 @@ public class QueryService {
         return job.get().getStatus();
     }
 
-    public QueryResultDTO read(UUID jobId) {
+    public QueryResultDto read(UUID jobId) {
         var job = jobRepository.findById(jobId);
         if (job.isEmpty()) {
             throw new RuntimeException("job not found");

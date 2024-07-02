@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 @Data
 @Builder
-public class QueryResultDTO {
+public class QueryResultDto {
     private UUID jobId;
     private List<Column> columns;
     private ResultData resultData;
@@ -42,8 +42,8 @@ public class QueryResultDTO {
      * Do not remove this class !!!
      * Intellij can not recognize this is useful.
      */
-    public static class QueryResultDTOBuilder {
-        public QueryResultDTOBuilder resultData(ResultData resultData) {
+    public static class QueryResultDtoBuilder {
+        public QueryResultDtoBuilder resultData(ResultData resultData) {
             this.resultData = resultData;
             this.totalCount = resultData.rows.size();
             return this;

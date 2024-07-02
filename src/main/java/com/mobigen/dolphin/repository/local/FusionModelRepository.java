@@ -1,7 +1,13 @@
 package com.mobigen.dolphin.repository.local;
 
+import com.mobigen.dolphin.dto.response.RecommendModelDto;
 import com.mobigen.dolphin.entity.local.FusionModelEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * <p>
@@ -11,4 +17,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @since 0.0.1
  */
 public interface FusionModelRepository extends JpaRepository<FusionModelEntity, Long> {
+    @Query("SELECT distinct new com.mobigen.dolphin.dto.response.RecommendModelDto(a.modelIdOfOM, a.fullyQualifiedName)" +
+            " FROM FusionModelEntity a" +
+            " where a.job in (Select b from JobEntity b where b.status = 'FINISHED' and b.id in (" +
+            "   SELECT job.id " +
+            "   FROM FusionModelEntity " +
+            "   WHERE fullyQualifiedName = :fqn or modelIdOfOM = :modelId )" +
+            " )")
+    List<RecommendModelDto> findAllByFullyQualifiedNameOrModelIdOfOM(@Param("fqn") String fullyQualifiedName, @Param("modelId") UUID modelId);
 }

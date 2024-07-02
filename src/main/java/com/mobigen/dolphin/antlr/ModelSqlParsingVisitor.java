@@ -283,8 +283,8 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
                     modelCache.put(key, model);
                     usedModelHistory.add(FusionModelEntity.builder()
                             .job(job)
-                            .modelIdOfOM(referenceModel.getId())
-                            .fullyQualifiedName(referenceModel.getFullyQualifiedName())
+                            .modelIdOfOM(tableInfo.getId())
+                            .fullyQualifiedName(tableInfo.getFullyQualifiedName())
                             .trinoModelName(model)
                             .build());
                     return model;

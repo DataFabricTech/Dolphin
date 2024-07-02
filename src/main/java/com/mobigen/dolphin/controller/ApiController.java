@@ -4,7 +4,7 @@ import com.mobigen.dolphin.dto.request.CreateModelDto;
 import com.mobigen.dolphin.dto.request.CreateModelWithFileDto;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.ModelDto;
-import com.mobigen.dolphin.dto.response.QueryResultDTO;
+import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.service.ModelService;
 import com.mobigen.dolphin.service.QueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -54,13 +54,13 @@ public class ApiController {
 
     @Operation(summary = "Execute Query using DataModel")
     @PostMapping("/query/execute")
-    public QueryResultDTO execute(@RequestBody ExecuteDto executeDto) {
+    public QueryResultDto execute(@RequestBody ExecuteDto executeDto) {
         return queryService.execute(executeDto);
     }
 
     @Operation(summary = "Async Execute Query using DataModel")
     @PostMapping("/query/async/execute")
-    public QueryResultDTO asyncExecute(@RequestBody ExecuteDto executeDto) {
+    public QueryResultDto asyncExecute(@RequestBody ExecuteDto executeDto) {
         return queryService.executeAsync(executeDto);
     }
 
@@ -80,5 +80,11 @@ public class ApiController {
     @GetMapping("/query/status/{job_id:^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$}")
     public Object status(@PathVariable("job_id") UUID jobId) {
         return queryService.status(jobId);
+    }
+
+    @GetMapping("/model/recommend")
+    public Object recommendModels(@RequestParam(required = false, name = "fully_qualified_name") String fullyQualifiedName,
+                                  @RequestParam(required = false, name = "model_id") UUID modelId) {
+        return modelService.getRecommendModels(fullyQualifiedName, modelId);
     }
 }

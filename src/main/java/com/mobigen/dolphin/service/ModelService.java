@@ -6,6 +6,7 @@ import com.mobigen.dolphin.dto.request.CreateModelWithFileDto;
 import com.mobigen.dolphin.dto.response.ModelDto;
 import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
+import com.mobigen.dolphin.repository.local.FusionModelRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.Functions;
@@ -33,6 +34,7 @@ public class ModelService {
     private final TrinoRepository trinoRepository;
     private final DolphinConfiguration dolphinConfiguration;
     private final OpenMetadataRepository openMetadataRepository;
+    private final FusionModelRepository fusionModelRepository;
 
     public List<ModelDto> getModels() {
         return trinoRepository.getModelList();
@@ -85,7 +87,7 @@ public class ModelService {
                 }
                 var jdbcURL = "jdbc:" + dbms + "://" + connInfo.getHostPort();
                 if (!List.of("mariadb", "mysql").contains(dbms)  // mariadb/mysql 의 경우 trino 에서 jdbc-url 에 db 세팅을 하지 않도록 되어 있어서 제외
-                        && !connInfo.getDatabase().isEmpty()) {
+                        && connInfo.getDatabase() != null && !connInfo.getDatabase().isEmpty()) {
                     jdbcURL = jdbcURL + "/" + connInfo.getDatabase();
                 }
 
@@ -148,5 +150,10 @@ public class ModelService {
         return ModelDto.builder()
                 .name(createModelDto.getModelName())
                 .build();
+    }
+
+    public Object getRecommendModels(String fullyQualifiedName, UUID modelId) {
+        // select model_id, fqn from fusionModel where job_id in (select job_id from fusionModel where fqn = '' or model_id = '')
+        return fusionModelRepository.findAllByFullyQualifiedNameOrModelIdOfOM(fullyQualifiedName, modelId);
     }
 }

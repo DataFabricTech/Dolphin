@@ -2,7 +2,7 @@ package com.mobigen.dolphin.repository.trino;
 
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.response.ModelDto;
-import com.mobigen.dolphin.dto.response.QueryResultDTO;
+import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.trino.extractor.ExtractType;
@@ -53,10 +53,10 @@ public class TrinoRepository {
                 (rs, rowNum) -> rs.getString("Catalog"));
     }
 
-    public QueryResultDTO executeQuery2(String sql) {
+    public QueryResultDto executeQuery2(String sql) {
         // get model data
-        List<QueryResultDTO.Column> columns = new ArrayList<>();
-        List<String > columnNames = new ArrayList<>();
+        List<QueryResultDto.Column> columns = new ArrayList<>();
+        List<String> columnNames = new ArrayList<>();
         try {
             var rows = trinoJdbcTemplate.query(sql, ((rs, rowNum) -> {
                 var rsmd = rs.getMetaData();
@@ -64,7 +64,7 @@ public class TrinoRepository {
                 if (rowNum == 0) {
                     for (int i = 1; i <= numberOfColumns; i++) {
                         var name = rsmd.getColumnName(i);
-                        columns.add(QueryResultDTO.Column.builder()
+                        columns.add(QueryResultDto.Column.builder()
                                 .name(name)
                                 .dataType(Functions.getDolphinType(rsmd.getColumnType(i)))
                                 .build());
@@ -77,9 +77,9 @@ public class TrinoRepository {
                 }
                 return row;
             }));
-            return QueryResultDTO.builder()
+            return QueryResultDto.builder()
                     .columns(columns)
-                    .resultData(QueryResultDTO.ResultData.builder()
+                    .resultData(QueryResultDto.ResultData.builder()
                             .columns(columnNames)
                             .rows(rows)
                             .build())
