@@ -24,6 +24,7 @@ public interface FusionModelRepository extends JpaRepository<FusionModelEntity, 
             "   FROM FusionModelEntity " +
             "   WHERE fullyQualifiedName = :fqn or modelIdOfOM = :modelId )" +
             " )" +
-            " group by a.modelIdOfOM, a.fullyQualifiedName")
+            " group by a.modelIdOfOM, a.fullyQualifiedName" +
+            " order by count(a.id) desc")
     List<RecommendModelDto> findAllByFullyQualifiedNameOrModelIdOfOM(@Param("fqn") String fullyQualifiedName, @Param("modelId") UUID modelId);
 }

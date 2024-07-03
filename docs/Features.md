@@ -1,4 +1,5 @@
-# Developed
+# Features
+## Developed
 
 - API
   - 데이터 모델
@@ -17,13 +18,20 @@
   - nonblocking query 수행시 trino 결과를 csv 로 저장/읽기 동작을 하고 있음
   - 로컬에 파일로 저장함
     - 서비스 레플리카 수행시 nonblocking 쿼리 결과 조회시 문제가 발생 할 수 있음
-
-# Not Yet
-
 - History
-  - input 쿼리 -> trino 쿼리 로 변환 되므로, 히스토리 저장 필요
-  - input 쿼리에서 데이터 모델을 지정하여 사용하기 때문에 히스토리 조회시 해당 모델을 함께 조회하기 위한 저장/조회 방법 필요
+  - input 쿼리 -> trino 쿼리 로 변환 히스토리 저장
   - 쿼리 수행의 결과/상태 히스토리 저장
+  - [GET /model/recommend](../src/main/java/com/mobigen/dolphin/controller/StatusController.java#L86) - input 쿼리에서 사용한 데이터 모델과 융합된 모델 저장/조회 기능
+
+
+## Bugs
+
+[Bugs](./Bugs.md)
+
+## Not Yet
+
+- Query
+  - 조회 결과 limit, offset 기본 적용 및 결과 조회
 - Cache
   - 동일 쿼리 수행시 작업물을 빠르게 반환 하기 위한 것
 - Jaeger

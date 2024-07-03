@@ -18,6 +18,7 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 
 ## Features
 
+[features 문서](./docs/Features.md)
 - 데이터 모델
     - 생성
         - Base 모델 생성 (실제 테이블 + SQL 로 구성된 것)
