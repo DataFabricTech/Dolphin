@@ -21,7 +21,7 @@ import java.util.List;
  * @since 0.0.1
  */
 public class CsvDeSerializer {
-    public static QueryResultDto readCsv(String directoryPath) {
+    public static QueryResultDto readCsv(String directoryPath, Integer offset, Integer limit) {
         var parser = new JSONParser();
         try (var dataReader = new CSVReader(new FileReader(directoryPath + "/data.csv"));
              var schemaReader = new FileReader(directoryPath + "/schema.json")
@@ -39,12 +39,15 @@ public class CsvDeSerializer {
                 columnNames.add(x);
             });
             List<List<Object>> records = new ArrayList<>();
-            while ((nextLine = dataReader.readNext()) != null) {
+            dataReader.skip(offset);
+            int rowNum = 0;
+            while (rowNum < limit && (nextLine = dataReader.readNext()) != null) {
                 List<Object> record = new ArrayList<>();
                 for (int i = 0; i < nextLine.length; i++) {
                     record.add(Functions.convertType(nextLine[i], columns.get(i).getDataType()));
                 }
                 records.add(record);
+                rowNum += 1;
             }
 
             return queryResultDtoBuilder

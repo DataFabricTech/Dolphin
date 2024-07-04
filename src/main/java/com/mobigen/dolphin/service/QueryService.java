@@ -123,11 +123,11 @@ public class QueryService {
         return job.get().getStatus();
     }
 
-    public QueryResultDto read(UUID jobId) {
+    public QueryResultDto read(UUID jobId, Integer offset, Integer limit) {
         var job = jobRepository.findById(jobId);
         if (job.isEmpty()) {
             throw new RuntimeException("job not found");
         }
-        return CsvDeSerializer.readCsv(job.get().getResultPath());
+        return CsvDeSerializer.readCsv(job.get().getResultPath(), offset, limit);
     }
 }
