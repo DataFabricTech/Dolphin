@@ -37,7 +37,7 @@ import static com.mobigen.dolphin.util.Functions.convertKeywordName;
 @Slf4j
 @Getter
 @RequiredArgsConstructor
-public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
+public class SqlVisitor extends ModelSqlBaseVisitor<String> {
     private final JobEntity job;
     private final OpenMetadataRepository openMetadataRepository;
     private final DolphinConfiguration dolphinConfiguration;
@@ -180,14 +180,17 @@ public class ModelSqlParsingVisitor extends ModelSqlBaseVisitor<String> {
         }
         var builder = new StringBuilder();
         TerminalNode limitValue;
+        TerminalNode offsetValue;
         if (ctx.COMMA() != null) {
+            offsetValue = ctx.INTEGER_LITERAL(0);
             builder.append(" offset ")
-                    .append(ctx.INTEGER_LITERAL(0))
+                    .append(offsetValue)
                     .append(" ");
             limitValue = ctx.INTEGER_LITERAL(1);
         } else if (ctx.K_OFFSET() != null) {
+            offsetValue = ctx.INTEGER_LITERAL(1);
             builder.append(" offset ")
-                    .append(ctx.INTEGER_LITERAL(1))
+                    .append(offsetValue)
                     .append(" ");
             limitValue = ctx.INTEGER_LITERAL(0);
         } else {

@@ -38,6 +38,10 @@ public class JobEntity {
     private String userQuery;
     @Column(name = "converted_query", length = 2048)
     private String convertedQuery;
+    @Column
+    private Integer page;
+    @Column
+    private Integer size;
     @CreationTimestamp
     private Timestamp created;
     @UpdateTimestamp

@@ -21,6 +21,10 @@ public class ExecuteDto {
     @Schema(description = "Sql select query using DataModel", example = "select * from model_test_1")
     private String query;
     private List<ReferenceModel> referenceModels = new ArrayList<>();
+    @Schema(description = "Limit of result rows")
+    private Integer limit = 500;
+    @Schema(description = "Start position of result rows")
+    private Integer offset = 0;
 
     @Getter
     @Setter

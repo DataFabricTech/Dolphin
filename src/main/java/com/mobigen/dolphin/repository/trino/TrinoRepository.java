@@ -46,6 +46,7 @@ public class TrinoRepository {
     public void execute(String sql) {
         log.info("Executing {}", sql);
         trinoJdbcTemplate.execute(sql);
+        log.info("End of executing {}", sql);
     }
 
     public List<String> getCatalogs() {
@@ -54,6 +55,7 @@ public class TrinoRepository {
     }
 
     public QueryResultDto executeQuery2(String sql) {
+        log.info("Executing {}", sql);
         // get model data
         List<QueryResultDto.Column> columns = new ArrayList<>();
         List<String> columnNames = new ArrayList<>();
@@ -77,6 +79,7 @@ public class TrinoRepository {
                 }
                 return row;
             }));
+            log.info("End of executing {}", sql);
             return QueryResultDto.builder()
                     .columns(columns)
                     .resultData(QueryResultDto.ResultData.builder()
@@ -95,10 +98,12 @@ public class TrinoRepository {
 
 
     public String executeQuery(UUID jobId, String sql, Boolean direct) {
+        log.info("Executing {}", sql);
         if (!direct) {
             // 결과를 가져와서 파일로 저장
             var extractor = ResultSetExtractorFactory.createResultSetExtractor(ExtractType.CSV, jobId);
             trinoJdbcTemplate.query(sql, extractor);
+            log.info("End of executing {}", sql);
             return extractor.getPrefix();
         } else {
             // trino 가 직접 hive table 생성을 통해서 결과 데이터 저장
@@ -107,6 +112,7 @@ public class TrinoRepository {
                     " with (format = 'PARQUET', external_location = 's3a://warehouse/result/" + jobId + "')" +
                     " as " + sql;
             trinoJdbcTemplate.execute(s);
+            log.info("End of executing {}", sql);
             return resultTableName;
         }
     }

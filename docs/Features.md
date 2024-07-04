@@ -32,6 +32,9 @@
 
 - Query
   - 조회 결과 limit, offset 기본 적용 및 결과 조회
+  - query 실행시 2가지 동작을 해야함.
+    - query 결과의 총 걔수 조회
+    - 결과 데이터 (limit 은 항상 default 사용)
 - Cache
   - 동일 쿼리 수행시 작업물을 빠르게 반환 하기 위한 것
 - Jaeger

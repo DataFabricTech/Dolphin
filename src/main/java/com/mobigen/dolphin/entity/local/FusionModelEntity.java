@@ -20,6 +20,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 @Entity
+@Table(name = "fusion_model")
 public class FusionModelEntity {
     @Id
     @GeneratedValue
@@ -28,7 +29,7 @@ public class FusionModelEntity {
     private String fullyQualifiedName;
     private String trinoModelName;
     @ManyToOne  // Many=fusionModel, One=job
-    @JoinColumn(name = "jobId")
+    @JoinColumn(name = "job_id")
     private JobEntity job;
 
 }

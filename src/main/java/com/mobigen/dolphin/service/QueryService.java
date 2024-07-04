@@ -2,7 +2,8 @@ package com.mobigen.dolphin.service;
 
 import com.mobigen.dolphin.antlr.ModelSqlLexer;
 import com.mobigen.dolphin.antlr.ModelSqlParser;
-import com.mobigen.dolphin.antlr.ModelSqlParsingVisitor;
+import com.mobigen.dolphin.antlr.SqlVisitor;
+import com.mobigen.dolphin.antlr.SqlWithoutLimitVisitor;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
@@ -41,6 +42,10 @@ public class QueryService {
     private final AsyncService asyncService;
 
     public JobEntity createJob(ExecuteDto executeDto) {
+        return createJob(executeDto, false);
+    }
+
+    public JobEntity createJob(ExecuteDto executeDto, boolean separateLimitation) {
         var lexer = new ModelSqlLexer(CharStreams.fromString(executeDto.getQuery()));
         var tokens = new CommonTokenStream(lexer);
         var parser = new ModelSqlParser(tokens);
@@ -50,23 +55,48 @@ public class QueryService {
                 .userQuery(executeDto.getQuery())
                 .build();
         jobRepository.save(job);
-        var visitor = new ModelSqlParsingVisitor(job, openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
+
+        SqlVisitor visitor;
+        if (separateLimitation) {
+            log.info("Use limitation separator visitor");
+            visitor = new SqlWithoutLimitVisitor(job, openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
+        } else {
+            log.info("Use origin visitor");
+            visitor = new SqlVisitor(job, openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
+        }
         var parseTree = parser.parse();
         var convertedQuery = visitor.visit(parseTree);
-        log.info("Converted sql: {}", convertedQuery);
+        log.info("Converted sql: {}, separate limitation: {}", convertedQuery, separateLimitation);
         job.setStatus(JobEntity.JobStatus.QUEUED);
         job.setConvertedQuery(convertedQuery);
+        if (separateLimitation) {
+            var pagination = ((SqlWithoutLimitVisitor) visitor).getPagination();
+            log.info("separated limitation: {}", pagination);
+            if (pagination != null) {
+                job.setPage(pagination.left());
+                job.setSize(pagination.right());
+            }
+        }
         jobRepository.save(job);
         fusionModelRepository.saveAll(visitor.getUsedModelHistory());
         return job;
     }
 
+    private String addLimitOffset(String sql, int offset, int limit) {
+        return sql + " offset " + offset + " limit " + limit;
+    }
+
     public QueryResultDto execute(ExecuteDto executeDto) {
-        var job = createJob(executeDto);
+        var job = createJob(executeDto, true);
+        var sql = addLimitOffset(
+                job.getConvertedQuery(),
+                job.getPage() != null ? job.getPage() : executeDto.getOffset(),
+                job.getSize() != null ? job.getSize() : executeDto.getLimit()
+        );
         job.setStatus(JobEntity.JobStatus.RUNNING);
         jobRepository.save(job);
         try {
-            var result = trinoRepository.executeQuery2(job.getConvertedQuery());
+            var result = trinoRepository.executeQuery2(sql);
             job.setStatus(JobEntity.JobStatus.FINISHED);
             jobRepository.save(job);
             return result;
