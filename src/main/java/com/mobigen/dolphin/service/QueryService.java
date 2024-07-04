@@ -82,21 +82,14 @@ public class QueryService {
         return job;
     }
 
-    private String addLimitOffset(String sql, int offset, int limit) {
-        return sql + " offset " + offset + " limit " + limit;
-    }
-
     public QueryResultDto execute(ExecuteDto executeDto) {
         var job = createJob(executeDto, true);
-        var sql = addLimitOffset(
-                job.getConvertedQuery(),
-                job.getPage() != null ? job.getPage() : executeDto.getOffset(),
-                job.getSize() != null ? job.getSize() : executeDto.getLimit()
-        );
         job.setStatus(JobEntity.JobStatus.RUNNING);
         jobRepository.save(job);
         try {
-            var result = trinoRepository.executeQuery2(sql);
+            var result = trinoRepository.executeQuery2(job.getConvertedQuery(),
+                    job.getSize(), job.getPage(),
+                    executeDto.getLimit(), executeDto.getPage());
             job.setStatus(JobEntity.JobStatus.FINISHED);
             jobRepository.save(job);
             return result;

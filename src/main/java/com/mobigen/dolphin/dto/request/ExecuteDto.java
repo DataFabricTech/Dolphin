@@ -1,6 +1,7 @@
 package com.mobigen.dolphin.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,9 +23,11 @@ public class ExecuteDto {
     private String query;
     private List<ReferenceModel> referenceModels = new ArrayList<>();
     @Schema(description = "Limit of result rows")
+    @Min(0)
     private Integer limit = 500;
-    @Schema(description = "Start position of result rows")
-    private Integer offset = 0;
+    @Schema(description = "Start page of result rows")
+    @Min(1)
+    private Integer page = 1;
 
     @Getter
     @Setter

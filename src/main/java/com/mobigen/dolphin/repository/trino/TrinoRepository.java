@@ -54,7 +54,31 @@ public class TrinoRepository {
                 (rs, rowNum) -> rs.getString("Catalog"));
     }
 
-    public QueryResultDto executeQuery2(String sql) {
+    public Integer countResult(String sql) {
+        var countSql = "select count(*) from (" + sql + ")";
+        return trinoJdbcTemplate.queryForObject(countSql, Integer.class);
+    }
+
+    private String addLimitOffset(String sql, int offset, int limit) {
+        return sql + " offset " + offset + " limit " + limit;
+    }
+
+    public QueryResultDto executeQuery2(String sql, Integer queryLimit, Integer queryOffset, Integer apiLimit, Integer apiPage) {
+        Integer totalRows;
+        int totalPages;
+        int page;
+        if (queryLimit != null && queryOffset != null) {  // query 에 limit, offset 이 있는 경우, limit 된 결과의 total 계산
+            sql = addLimitOffset(sql, queryOffset, queryLimit);
+            totalRows = countResult(sql);
+            totalPages = 1;
+            page = 1;
+        } else { // query 에 limit, offset 이 없는 경우, api 요청에 의한 결과기 때문에, 원본 sql 의 total 계산
+            totalRows = countResult(sql);
+            totalPages = (int) Math.ceil((double) totalRows / apiLimit);
+            page = apiPage;
+            var offset = (apiPage - 1) * apiLimit;
+            sql = addLimitOffset(sql, offset, apiLimit);
+        }
         log.info("Executing {}", sql);
         // get model data
         List<QueryResultDto.Column> columns = new ArrayList<>();
@@ -86,6 +110,9 @@ public class TrinoRepository {
                             .columns(columnNames)
                             .rows(rows)
                             .build())
+                    .totalRows(totalRows)
+                    .totalPages(totalPages)
+                    .page(page)
                     .build();
         } catch (UncategorizedSQLException e) {
             log.error(e.getMessage(), e);

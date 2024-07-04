@@ -7,9 +7,13 @@
     - [리스트](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L37)
   - 쿼리
     - [blocking 실행](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L57)
+      - 조회 결과 limit, offset 기본 적용
+      - query 결과의 총 걔수 조회
+      - 결과 데이터 (limit 은 항상 default 사용)
     - [nonblocking 실행](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L63)
     - [작업 상태 조회](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L81)
     - [작업 결과 조회](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L69)
+      - 조회 결과 limit, offset 기본 적용 및 결과 조회
   - OpenMetadata notify
     - [notify](../src/main/java/com/mobigen/dolphin/controller/OMNotifyController.java#L27)
   - 시스템
@@ -31,7 +35,6 @@
 ## Not Yet
 
 - Query
-  - 조회 결과 limit, offset 기본 적용 및 결과 조회
   - query 실행시 2가지 동작을 해야함.
     - query 결과의 총 걔수 조회
     - 결과 데이터 (limit 은 항상 default 사용)

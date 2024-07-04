@@ -21,7 +21,7 @@ class CsvDeSerializerTest {
         var path = getClass().getClassLoader().getResource("data/result_data_1");
         assert path != null;
         var result = CsvDeSerializer.readCsv(path.getPath(), 0, 7);
-        assertEquals(7, result.getTotalCount());
+        assertEquals(7, result.getSize());
         assertEquals(List.of(
                 QueryResultDto.Column.builder().name("product").dataType(DolphinType.TEXT).build(),
                 QueryResultDto.Column.builder().name("series").dataType(DolphinType.TEXT).build(),

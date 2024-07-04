@@ -9,6 +9,7 @@ import com.mobigen.dolphin.service.ModelService;
 import com.mobigen.dolphin.service.QueryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +55,9 @@ public class ApiController {
         return modelService.createModelWithFile(createModelDto, file);
     }
 
-    @Operation(summary = "Execute Query using DataModel")
+    @Operation(summary = "Execute Query using DataModel (it always shows limited results, default: 500)")
     @PostMapping("/query/execute")
-    public QueryResultDto execute(@RequestBody ExecuteDto executeDto) {
+    public QueryResultDto execute(@RequestBody @Valid ExecuteDto executeDto) {
         return queryService.execute(executeDto);
     }
 

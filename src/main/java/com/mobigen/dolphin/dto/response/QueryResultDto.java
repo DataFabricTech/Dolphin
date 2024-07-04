@@ -20,7 +20,10 @@ public class QueryResultDto {
     private UUID jobId;
     private List<Column> columns;
     private ResultData resultData;
-    private int totalCount;
+    private int totalRows;
+    private int totalPages;
+    private int page;
+    private int size;
 
     @Data
     @Builder
@@ -45,7 +48,7 @@ public class QueryResultDto {
     public static class QueryResultDtoBuilder {
         public QueryResultDtoBuilder resultData(ResultData resultData) {
             this.resultData = resultData;
-            this.totalCount = resultData.rows.size();
+            this.size = resultData.rows.size();
             return this;
         }
     }
