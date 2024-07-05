@@ -69,6 +69,15 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 
 ## Develop Guide
 
+### Commit Type
+- feat: 새로운 기능 추가
+- fix: 버그 수정
+- docs: 문서 수정
+- style: 코드 포멧팅 등 로직 변경 없는 스타일 변경
+- refactor: 코드 리펙토링
+- test: 테스트 코드, 리펙토링 테스트 코드 추가/수정
+- chore: 설정, 빌드, 패키지 매니저 등 수정
+
 ### Dependencies
 
 #### Install with Docker
