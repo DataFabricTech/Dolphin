@@ -71,12 +71,12 @@ public class TrinoRepository {
             sql = addLimitOffset(sql, queryOffset, queryLimit);
             totalRows = countResult(sql);
             totalPages = 1;
-            page = 1;
+            page = 0;
         } else { // query 에 limit, offset 이 없는 경우, api 요청에 의한 결과기 때문에, 원본 sql 의 total 계산
             totalRows = countResult(sql);
             totalPages = (int) Math.ceil((double) totalRows / apiLimit);
             page = apiPage;
-            var offset = (apiPage - 1) * apiLimit;
+            var offset = apiPage * apiLimit;
             sql = addLimitOffset(sql, offset, apiLimit);
         }
         log.info("Executing {}", sql);

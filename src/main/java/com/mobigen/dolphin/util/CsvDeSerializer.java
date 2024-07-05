@@ -46,7 +46,7 @@ public class CsvDeSerializer {
                     .size(limit)
                     .totalRows(totalRows)
                     .totalPages(totalPages);
-            var offset = (page - 1) * limit;
+            var offset = page * limit;
             dataReader.skip(offset);
             int rowNum = 0;
             while (rowNum < limit && (nextLine = dataReader.readNext()) != null) {

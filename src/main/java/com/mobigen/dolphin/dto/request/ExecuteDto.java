@@ -26,8 +26,8 @@ public class ExecuteDto {
     @Min(0)
     private Integer limit = 500;
     @Schema(description = "Start page of result rows")
-    @Min(1)
-    private Integer page = 1;
+    @Min(0)
+    private Integer page = 0;
 
     @Getter
     @Setter
