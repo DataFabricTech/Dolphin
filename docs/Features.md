@@ -13,7 +13,9 @@
     - [nonblocking 실행](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L63)
     - [작업 상태 조회](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L81)
     - [작업 결과 조회](../src/main/java/com/mobigen/dolphin/controller/ApiController.java#L69)
-      - 조회 결과 limit, offset 기본 적용 및 결과 조회
+      - 조회 결과 limit, offset 기본 적용
+      - query 결과의 총 걔수 조회
+      - 결과 데이터 (limit 은 항상 default 사용)
   - OpenMetadata notify
     - [notify](../src/main/java/com/mobigen/dolphin/controller/OMNotifyController.java#L27)
   - 시스템
@@ -35,9 +37,8 @@
 ## Not Yet
 
 - Query
-  - query 실행시 2가지 동작을 해야함.
-    - query 결과의 총 걔수 조회
-    - 결과 데이터 (limit 은 항상 default 사용)
+  - async 결과 저장 한 것을 삭제 하는 로직
+    - 예) 몇 번(임계값) 조회 후 삭제, 시간 지나면 삭제 등..
 - Cache
   - 동일 쿼리 수행시 작업물을 빠르게 반환 하기 위한 것
 - Jaeger

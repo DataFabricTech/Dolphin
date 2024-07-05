@@ -10,10 +10,10 @@ import java.util.UUID;
  * @since 0.0.1
  */
 public class ResultSetExtractorFactory {
-    public static AbsResultSetExtractor<Void> createResultSetExtractor(ExtractType extractType, UUID jobId) {
+    public static AbsResultSetExtractor<Void> createResultSetExtractor(ExtractType extractType, UUID jobId, Long totalRows) {
         switch (extractType) {
             default -> {
-                return new StreamingCsvResultSetExtractor(jobId);
+                return new StreamingCsvResultSetExtractor(jobId, totalRows);
             }
         }
     }

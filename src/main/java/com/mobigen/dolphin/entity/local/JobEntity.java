@@ -39,9 +39,9 @@ public class JobEntity {
     @Column(name = "converted_query", length = 2048)
     private String convertedQuery;
     @Column
-    private Integer page;
+    private Integer offset_;
     @Column
-    private Integer size;
+    private Integer limit_;
     @CreationTimestamp
     private Timestamp created;
     @UpdateTimestamp

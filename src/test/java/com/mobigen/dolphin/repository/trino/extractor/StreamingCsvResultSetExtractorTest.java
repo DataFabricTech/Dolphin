@@ -60,7 +60,7 @@ class StreamingCsvResultSetExtractorTest {
         doReturn(resultSetMetaData).when(resultSet).getMetaData();
 
         UUID jobId = UUID.randomUUID();
-        extractor = new StreamingCsvResultSetExtractor(jobId);
+        extractor = new StreamingCsvResultSetExtractor(jobId, 3L);
 
         // Inject StringWriter instances
         var dataStringWriter = new StringWriter();
@@ -70,7 +70,10 @@ class StreamingCsvResultSetExtractorTest {
 
         extractor.extractData(resultSet);
 
-        assertEquals("{\"product\":\"TEXT\",\"series\":\"TEXT\",\"sales_price\":\"INTEGER\"}",
+        assertEquals("{" +
+                        "\"schema\":{\"product\":\"TEXT\",\"series\":\"TEXT\",\"sales_price\":\"INTEGER\"}," +
+                        "\"totalRows\":3" +
+                        "}",
                 schemaStringWriter.toString());
         assertEquals("""
                         "product","series","sales_price"

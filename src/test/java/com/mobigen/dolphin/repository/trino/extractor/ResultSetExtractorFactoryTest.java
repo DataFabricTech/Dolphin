@@ -18,7 +18,7 @@ class ResultSetExtractorFactoryTest {
     @Test
     void testCreateResultSetExtractor() {
         var id = UUID.randomUUID();
-        var extractor = ResultSetExtractorFactory.createResultSetExtractor(ExtractType.CSV, id);
+        var extractor = ResultSetExtractorFactory.createResultSetExtractor(ExtractType.CSV, id, 3L);
         assertInstanceOf(StreamingCsvResultSetExtractor.class, extractor);
     }
 }

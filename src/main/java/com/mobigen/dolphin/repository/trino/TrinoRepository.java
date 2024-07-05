@@ -54,17 +54,17 @@ public class TrinoRepository {
                 (rs, rowNum) -> rs.getString("Catalog"));
     }
 
-    public Integer countResult(String sql) {
+    public Long countResult(String sql) {
         var countSql = "select count(*) from (" + sql + ")";
-        return trinoJdbcTemplate.queryForObject(countSql, Integer.class);
+        return trinoJdbcTemplate.queryForObject(countSql, Long.class);
     }
 
     private String addLimitOffset(String sql, int offset, int limit) {
         return sql + " offset " + offset + " limit " + limit;
     }
 
-    public QueryResultDto executeQuery2(String sql, Integer queryLimit, Integer queryOffset, Integer apiLimit, Integer apiPage) {
-        Integer totalRows;
+    public QueryResultDto executeQuery(String sql, Integer queryLimit, Integer queryOffset, Integer apiLimit, Integer apiPage) {
+        Long totalRows;
         int totalPages;
         int page;
         if (queryLimit != null && queryOffset != null) {  // query 에 limit, offset 이 있는 경우, limit 된 결과의 total 계산
@@ -124,11 +124,12 @@ public class TrinoRepository {
     }
 
 
-    public String executeQuery(UUID jobId, String sql, Boolean direct) {
+    public String asyncExecuteQuery(UUID jobId, String sql, Boolean direct) {
         log.info("Executing {}", sql);
+        var totalRows = countResult(sql);
         if (!direct) {
             // 결과를 가져와서 파일로 저장
-            var extractor = ResultSetExtractorFactory.createResultSetExtractor(ExtractType.CSV, jobId);
+            var extractor = ResultSetExtractorFactory.createResultSetExtractor(ExtractType.CSV, jobId, totalRows);
             trinoJdbcTemplate.query(sql, extractor);
             log.info("End of executing {}", sql);
             return extractor.getPrefix();
@@ -144,8 +145,8 @@ public class TrinoRepository {
         }
     }
 
-    public String executeQuery(UUID jobId, String sql) {
-        return executeQuery(jobId, sql, false);
+    public String asyncExecuteQuery(UUID jobId, String sql) {
+        return asyncExecuteQuery(jobId, sql, false);
     }
 
 

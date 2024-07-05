@@ -20,7 +20,7 @@ public class QueryResultDto {
     private UUID jobId;
     private List<Column> columns;
     private ResultData resultData;
-    private int totalRows;
+    private long totalRows;
     private int totalPages;
     private int page;
     private int size;

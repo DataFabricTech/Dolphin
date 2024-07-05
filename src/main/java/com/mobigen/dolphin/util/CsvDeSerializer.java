@@ -21,7 +21,7 @@ import java.util.List;
  * @since 0.0.1
  */
 public class CsvDeSerializer {
-    public static QueryResultDto readCsv(String directoryPath, Integer offset, Integer limit) {
+    public static QueryResultDto readCsv(String directoryPath, Integer page, Integer limit) {
         var parser = new JSONParser();
         try (var dataReader = new CSVReader(new FileReader(directoryPath + "/data.csv"));
              var schemaReader = new FileReader(directoryPath + "/schema.json")
@@ -31,14 +31,22 @@ public class CsvDeSerializer {
             var queryResultDtoBuilder = QueryResultDto.builder();
             List<QueryResultDto.Column> columns = new ArrayList<>();
             List<String> columnNames = new ArrayList<>();
+            var totalRows = (long) jsonObject.get("totalRows");
+            var totalPages = (int) Math.ceil((double) totalRows / limit);
+            var schemaObject = (JSONObject) jsonObject.get("schema");
             Arrays.stream(dataReader.readNext()).forEach(x -> {
                 columns.add(QueryResultDto.Column.builder()
                         .name(x)
-                        .dataType(DolphinType.fromValue((String) jsonObject.get(x)))
+                        .dataType(DolphinType.fromValue((String) schemaObject.get(x)))
                         .build());
                 columnNames.add(x);
             });
             List<List<Object>> records = new ArrayList<>();
+            queryResultDtoBuilder.page(page)
+                    .size(limit)
+                    .totalRows(totalRows)
+                    .totalPages(totalPages);
+            var offset = (page - 1) * limit;
             dataReader.skip(offset);
             int rowNum = 0;
             while (rowNum < limit && (nextLine = dataReader.readNext()) != null) {

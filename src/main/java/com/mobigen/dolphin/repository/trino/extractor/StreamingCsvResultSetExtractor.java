@@ -27,9 +27,11 @@ import java.util.UUID;
 public class StreamingCsvResultSetExtractor extends AbsResultSetExtractor<Void> {
     private CSVWriter dataWriter;
     private Writer schemaWriter;
+    private Long totalRows;
 
-    public StreamingCsvResultSetExtractor(UUID jobId) {
+    public StreamingCsvResultSetExtractor(UUID jobId, Long totalRows) {
         super(jobId);
+        this.totalRows = totalRows;
     }
 
     @Override
@@ -44,7 +46,10 @@ public class StreamingCsvResultSetExtractor extends AbsResultSetExtractor<Void> 
                 var columnType = Functions.getDolphinType(resultSetMetadata.getColumnType(i + 1));
                 schemaJson.put(columnName, columnType.value());
             }
-            schemaWriter.write(schemaJson.toJSONString());
+            var rootJson = new JSONObject();
+            rootJson.put("totalRows", totalRows);
+            rootJson.put("schema", schemaJson);
+            schemaWriter.write(rootJson.toJSONString());
             dataWriter.writeAll(rs, true);
         } catch (IOException e) {
             throw new RuntimeException(e);

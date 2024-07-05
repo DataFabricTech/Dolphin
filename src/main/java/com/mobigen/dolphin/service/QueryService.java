@@ -73,8 +73,8 @@ public class QueryService {
             var pagination = ((SqlWithoutLimitVisitor) visitor).getPagination();
             log.info("separated limitation: {}", pagination);
             if (pagination != null) {
-                job.setPage(pagination.left());
-                job.setSize(pagination.right());
+                job.setOffset_(pagination.left());
+                job.setLimit_(pagination.right());
             }
         }
         jobRepository.save(job);
@@ -83,12 +83,13 @@ public class QueryService {
     }
 
     public QueryResultDto execute(ExecuteDto executeDto) {
-        var job = createJob(executeDto, true);
+        var job = createJob(executeDto, true);  // blocking 실행의 경우 limit, offset 을 sql 과 분리
+        log.info("Run blocking job: {}", job.getId());
         job.setStatus(JobEntity.JobStatus.RUNNING);
         jobRepository.save(job);
         try {
-            var result = trinoRepository.executeQuery2(job.getConvertedQuery(),
-                    job.getSize(), job.getPage(),
+            var result = trinoRepository.executeQuery(job.getConvertedQuery(),
+                    job.getLimit_(), job.getOffset_(),
                     executeDto.getLimit(), executeDto.getPage());
             job.setStatus(JobEntity.JobStatus.FINISHED);
             jobRepository.save(job);
@@ -109,6 +110,7 @@ public class QueryService {
     }
 
     public Object status(UUID jobId) {
+        log.info("Get status: {}", jobId);
         var job = jobRepository.findById(jobId);
         if (job.isEmpty()) {
             throw new RuntimeException("job not found");
@@ -116,11 +118,12 @@ public class QueryService {
         return job.get().getStatus();
     }
 
-    public QueryResultDto read(UUID jobId, Integer offset, Integer limit) {
+    public QueryResultDto read(UUID jobId, Integer page, Integer limit) {
+        log.info("Read job: {}, page: {}, limit: {}", jobId, page, limit);
         var job = jobRepository.findById(jobId);
         if (job.isEmpty()) {
             throw new RuntimeException("job not found");
         }
-        return CsvDeSerializer.readCsv(job.get().getResultPath(), offset, limit);
+        return CsvDeSerializer.readCsv(job.get().getResultPath(), page, limit);
     }
 }

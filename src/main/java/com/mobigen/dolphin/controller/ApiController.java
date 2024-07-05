@@ -72,10 +72,10 @@ public class ApiController {
     public Object read(
             @RequestParam("job_id")
             @Pattern(regexp = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$") String jobId,
-            @RequestParam(required = false, defaultValue = "0") @Min(0) Integer offset,
+            @RequestParam(required = false, defaultValue = "1") @Min(1) Integer page,
             @RequestParam(required = false, defaultValue = "500") @Min(0) Integer limit
     ) {
-        return queryService.read(UUID.fromString(jobId), offset, limit);
+        return queryService.read(UUID.fromString(jobId), page, limit);
     }
 
     @Operation(summary = "Download result data of asynchronous query using JobId")

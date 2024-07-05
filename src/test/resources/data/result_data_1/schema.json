@@ -1,5 +1,8 @@
 {
-  "product": "TEXT",
-  "series": "TEXT",
-  "sales_price": "INTEGER"
+  "schema": {
+    "product": "TEXT",
+    "series": "TEXT",
+    "sales_price": "INTEGER"
+  },
+  "totalRows": 7
 }
