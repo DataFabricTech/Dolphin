@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,7 +34,7 @@ public class CreateModelDto {
         @Schema(description = "Type of base DataModel (MODEL, QUERY, CONNECTOR)")
         private ModelType type;
         @Schema(description = "Select columns, default = *")
-        private List<String> selectedColumnNames;
+        private List<String> selectedColumnNames = new ArrayList<>();
         // MODEL
         @Schema(description = "DataModel name")
         private String model;

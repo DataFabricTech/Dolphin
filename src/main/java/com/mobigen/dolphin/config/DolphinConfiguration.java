@@ -36,6 +36,7 @@ public class DolphinConfiguration {
         private String dbSchema;
         private String fileSchema;
         private Character specialChar = '"';
+        private String omTrinoDatabaseService;
 
         public String getCatalog() {
             return convertKeywordName(catalog);

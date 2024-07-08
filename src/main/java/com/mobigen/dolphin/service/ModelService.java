@@ -4,9 +4,11 @@ import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.CreateModelDto;
 import com.mobigen.dolphin.dto.request.CreateModelWithFileDto;
 import com.mobigen.dolphin.dto.response.ModelDto;
+import com.mobigen.dolphin.entity.local.ModelQueueEntity;
 import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
+import com.mobigen.dolphin.repository.local.ModelQueueRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.Functions;
@@ -35,6 +37,7 @@ public class ModelService {
     private final DolphinConfiguration dolphinConfiguration;
     private final OpenMetadataRepository openMetadataRepository;
     private final FusionModelRepository fusionModelRepository;
+    private final ModelQueueRepository modelQueueRepository;
 
     public List<ModelDto> getModels() {
         return trinoRepository.getModelList();
@@ -115,9 +118,10 @@ public class ModelService {
                         .map(Functions::convertKeywordName)
                         .collect(Collectors.joining(", "))
                 : "*";
-        String sql = "create view " + dolphinConfiguration.getModel().getCatalog()
-                + "." + dolphinConfiguration.getModel().getDBSchema()
+        var trinoModel = dolphinConfiguration.getModel().getCatalog()
+                + "." + dolphinConfiguration.getModel().getSchema().getDb()
                 + "." + createModelDto.getModelName();
+        String sql = "create view " + trinoModel;
 
         if (createModelDto.getBaseModel().getType() == ModelType.CONNECTOR) {
             var connInfo = openMetadataRepository.getConnectorInfo(createModelDto.getBaseModel().getConnectorId(),
@@ -128,10 +132,28 @@ public class ModelService {
                     + " from " + catalogName
                     + "." + createModelDto.getBaseModel().getDatabase()
                     + "." + createModelDto.getBaseModel().getTable();
+            String fqn;
+            if ("postgresql".contains(connInfo.getServiceType().toLowerCase())) {
+                fqn = connInfo.getFullyQualifiedName()
+                        + "." + createModelDto.getBaseModel().getDatabase()
+                        + ".public"
+                        + "." + createModelDto.getBaseModel().getTable();
+            } else {  // mariadb, mysql
+                fqn = connInfo.getFullyQualifiedName() + ".default"
+                        + "." + createModelDto.getBaseModel().getDatabase()
+                        + "." + createModelDto.getBaseModel().getTable();
+            }
+            var modelQueueEntity = ModelQueueEntity.builder()
+                    .trinoModelName(trinoModel)
+                    .modelNameFqn(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel)
+                    .fromFqn(fqn)
+                    .command(ModelQueueEntity.Command.LINEAGE)
+                    .build();
+            modelQueueRepository.save(modelQueueEntity);
         } else if (createModelDto.getBaseModel().getType() == ModelType.MODEL) {
             sql = sql + " as select " + selectedColumns
                     + " from " + dolphinConfiguration.getModel().getCatalog()
-                    + "." + dolphinConfiguration.getModel().getDBSchema()
+                    + "." + dolphinConfiguration.getModel().getSchema().getDb()
                     + "." + createModelDto.getBaseModel().getModel();
         } else {
             sql = sql + " as " + createModelDto.getBaseModel().getQuery();

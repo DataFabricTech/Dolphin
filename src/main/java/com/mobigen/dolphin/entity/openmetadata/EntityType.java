@@ -1,6 +1,7 @@
 package com.mobigen.dolphin.entity.openmetadata;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ public enum EntityType {
     STORAGE_SERVICE("storageService"),
     DATABASE_SCHEMA("databaseSchema"),
     DATABASE("database"),
+    @JsonProperty("table")
     TABLE("table"),
     INGESTION_PIPELINE("ingestionPipeline"),
     UNSUPPORTED("unsupported"),

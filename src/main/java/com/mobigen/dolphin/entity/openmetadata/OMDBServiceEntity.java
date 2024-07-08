@@ -1,7 +1,7 @@
 package com.mobigen.dolphin.entity.openmetadata;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * <p>
@@ -10,8 +10,12 @@ import lombok.EqualsAndHashCode;
  * @version 0.0.1
  * @since 0.0.1
  */
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Data
 public class OMDBServiceEntity extends OMBaseEntity {
     private String serviceType;
     private ConnectionEntity connection;

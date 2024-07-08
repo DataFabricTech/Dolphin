@@ -1,6 +1,10 @@
 package com.mobigen.dolphin.entity.openmetadata;
 
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
@@ -11,7 +15,11 @@ import java.util.UUID;
  * @version 0.0.1
  * @since 0.0.1
  */
-@Data
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OMBaseEntity {
     private Boolean deleted;
     private String description;

@@ -1,7 +1,7 @@
 package com.mobigen.dolphin.entity.openmetadata;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,8 +13,12 @@ import java.util.UUID;
  * @version 0.0.1
  * @since 0.0.1
  */
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-@Data
 public class OMTableEntity extends OMBaseEntity {
     private OMChangeDescriptionEntity changeDescription;
     private List<OMBaseEntity> children;
