@@ -28,7 +28,9 @@
   - input 쿼리 -> trino 쿼리 로 변환 히스토리 저장
   - 쿼리 수행의 결과/상태 히스토리 저장
   - [GET /model/recommend](../src/main/java/com/mobigen/dolphin/controller/StatusController.java#L86) - input 쿼리에서 사용한 데이터 모델과 융합된 모델 저장/조회 기능
-
+- Scheduler
+  - OM 에 생성한 모델이 등록된 후, 기존 모델(OpenMetadata 의 선택한 테이블)을 Lineage 로 연결하도록 OM API 호출
+    - Connector 타입으로 생성된 모델에 한해 적용 완료
 
 ## Bugs
 
