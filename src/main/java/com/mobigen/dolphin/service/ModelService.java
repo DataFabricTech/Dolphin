@@ -1,5 +1,6 @@
 package com.mobigen.dolphin.service;
 
+import com.mobigen.dolphin.antlr.SqlVisitor;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.CreateModelDto;
 import com.mobigen.dolphin.dto.request.CreateModelWithFileDto;
@@ -18,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -38,6 +40,7 @@ public class ModelService {
     private final OpenMetadataRepository openMetadataRepository;
     private final FusionModelRepository fusionModelRepository;
     private final ModelQueueRepository modelQueueRepository;
+    private final QueryService queryService;
 
     public List<ModelDto> getModels() {
         return trinoRepository.getModelList();
@@ -149,16 +152,34 @@ public class ModelService {
                     .fromFqn(fqn)
                     .command(ModelQueueEntity.Command.LINEAGE)
                     .build();
+            trinoRepository.execute(sql);
             modelQueueRepository.save(modelQueueEntity);
         } else if (createModelDto.getBaseModel().getType() == ModelType.MODEL) {
             sql = sql + " as select " + selectedColumns
                     + " from " + dolphinConfiguration.getModel().getCatalog()
                     + "." + dolphinConfiguration.getModel().getSchema().getDb()
                     + "." + createModelDto.getBaseModel().getModel();
+            trinoRepository.execute(sql);
         } else {
-            sql = sql + " as " + createModelDto.getBaseModel().getQuery();
+            var visitor = new SqlVisitor(null,
+                    openMetadataRepository,
+                    dolphinConfiguration,
+                    createModelDto.getBaseModel().getReferenceModels());
+            var parseTree = queryService.getParseTree(createModelDto.getBaseModel().getQuery());
+            var convertedQuery = queryService.getConvertedSql(visitor, parseTree);
+            sql = sql + " as " + convertedQuery;
+            List<ModelQueueEntity> modelQueueEntities = new ArrayList<>();
+            for (var modelHistory : visitor.getUsedModelHistory()) {
+                modelQueueEntities.add(ModelQueueEntity.builder()
+                        .trinoModelName(trinoModel)
+                        .modelNameFqn(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel)
+                        .fromFqn(modelHistory.getFullyQualifiedName())
+                        .command(ModelQueueEntity.Command.LINEAGE)
+                        .build());
+            }
+            trinoRepository.execute(sql);
+            modelQueueRepository.saveAll(modelQueueEntities);
         }
-        trinoRepository.execute(sql);
         return ModelDto.builder()
                 .name(createModelDto.getModelName())
                 .build();

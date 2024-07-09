@@ -33,14 +33,18 @@ public class CreateModelDto {
     public static class BaseModel {
         @Schema(description = "Type of base DataModel (MODEL, QUERY, CONNECTOR)")
         private ModelType type;
+        // QUERY
+        @Schema(description = "Sql select query using DataModel", example = "select * from model_test_1")
+        private String query;
+        @Schema(description = "Model information of OpenMetadata referenced by the model used in the sql query")
+        private List<ExecuteDto.ReferenceModel> referenceModels = new ArrayList<>();
+
+        // Shared by MODEL, CONNECTOR
         @Schema(description = "Select columns, default = *")
         private List<String> selectedColumnNames = new ArrayList<>();
         // MODEL
         @Schema(description = "DataModel name")
         private String model;
-        // QUERY
-        @Schema(description = "Sql select query using DataModel", example = "select * from model_test_1")
-        private String query;
         // CONNECTOR
         @Schema(description = "Id of OpenMetadata DBService")
         private UUID connectorId;

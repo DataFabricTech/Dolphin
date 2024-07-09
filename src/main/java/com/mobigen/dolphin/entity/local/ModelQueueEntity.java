@@ -1,9 +1,6 @@
 package com.mobigen.dolphin.entity.local;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +21,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "model_queue")
 public class ModelQueueEntity {
     @Id
-    @Column(name = "trino_model_name", unique = true, nullable = false)
+    @GeneratedValue
+    private Long id;
     private String trinoModelName;
     private String modelNameFqn;
     private String fromFqn;

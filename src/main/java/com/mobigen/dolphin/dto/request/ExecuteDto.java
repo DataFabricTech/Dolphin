@@ -21,6 +21,7 @@ import java.util.UUID;
 public class ExecuteDto {
     @Schema(description = "Sql select query using DataModel", example = "select * from model_test_1")
     private String query;
+    @Schema(description = "Model information of OpenMetadata referenced by the model used in the sql query")
     private List<ReferenceModel> referenceModels = new ArrayList<>();
     @Schema(description = "Limit of result rows")
     @Min(0)

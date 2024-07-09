@@ -41,14 +41,25 @@ public class QueryService {
 
     private final AsyncService asyncService;
 
+    public ModelSqlParser.ParseContext getParseTree(String sql) {
+        var lexer = new ModelSqlLexer(CharStreams.fromString(sql));
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new ModelSqlParser(tokens);
+        return parser.parse();
+    }
+
+    public String getConvertedSql(SqlVisitor visitor, ModelSqlParser.ParseContext parseTree) {
+        return visitor.visit(parseTree);
+    }
+
     public JobEntity createJob(ExecuteDto executeDto) {
         return createJob(executeDto, false);
     }
 
     public JobEntity createJob(ExecuteDto executeDto, boolean separateLimitation) {
-        var lexer = new ModelSqlLexer(CharStreams.fromString(executeDto.getQuery()));
-        var tokens = new CommonTokenStream(lexer);
-        var parser = new ModelSqlParser(tokens);
+        log.info("Parse query: {}", executeDto.getQuery());
+        var parseTree = getParseTree(executeDto.getQuery());
+
         log.info("Create job. origin sql: {}", executeDto.getQuery());
         var job = JobEntity.builder()
                 .status(JobEntity.JobStatus.INIT)
@@ -64,8 +75,7 @@ public class QueryService {
             log.info("Use origin visitor");
             visitor = new SqlVisitor(job, openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
         }
-        var parseTree = parser.parse();
-        var convertedQuery = visitor.visit(parseTree);
+        var convertedQuery = getConvertedSql(visitor, parseTree);
         log.info("Converted sql: {}, separate limitation: {}", convertedQuery, separateLimitation);
         job.setStatus(JobEntity.JobStatus.QUEUED);
         job.setConvertedQuery(convertedQuery);

@@ -10,5 +10,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @version 0.0.1
  * @since 0.0.1
  */
-public interface ModelQueueRepository extends JpaRepository<ModelQueueEntity, String> {
+public interface ModelQueueRepository extends JpaRepository<ModelQueueEntity, Long> {
 }
