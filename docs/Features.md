@@ -30,7 +30,9 @@
   - [GET /model/recommend](../src/main/java/com/mobigen/dolphin/controller/StatusController.java#L86) - input 쿼리에서 사용한 데이터 모델과 융합된 모델 저장/조회 기능
 - Scheduler
   - OM 에 생성한 모델이 등록된 후, 기존 모델(OpenMetadata 의 선택한 테이블)을 Lineage 로 연결하도록 OM API 호출
-    - Connector 타입으로 생성된 모델에 한해 적용 완료
+    - Connector 타입으로 생성된 모델 완료
+    - Query 타입으로 생성된 모델 완료
+    - Model 타입은 OpenMetadata 에서 자동으로 등록 해줌 (같은 Trino 라서 가능)  
 
 ## Bugs
 
@@ -56,7 +58,6 @@
     - trino-storage 를 native-s3 를 이용하도록 변경을 해보았으나, 코드 이해도가 적어서 테스트가 제대로 안됨
 - OpenMetadata(OM)
   - 생성한 모델(trino-view)을 OM 에 ingestion 실행
-  - OM 에 생성한 모델이 등록된 후, 기존 모델(OpenMetadata 의 선택한 테이블)을 Lineage 로 연결하도록 OM API 호출
   - OM 연결을 위한 bot getOrCreate 로직 필요 (token 발급용)
   - OM 의 모델 리스트를 조회 하도록 ?? (현재는 trino 모델만 조회되는 중)
 - 임시 저장
