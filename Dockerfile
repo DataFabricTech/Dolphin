@@ -9,18 +9,14 @@ COPY build.gradle.kts /build/
 COPY settings.gradle.kts /build/
 COPY src /build/src
 
+RUN ./gradlew build -x test --parallel --continue > /dev/null 2>&1 || true
+
 WORKDIR /build
 
 ARG project_version=v0.1.0
 ARG skip_test=true
 
-RUN if [ "$skip_test" = "true" ]; then \
-      echo "build without test"; \
-      ./gradlew build -x test --parallel --stacktrace --debug; \
-    else \
-      echo "build with test"; \
-      ./gradlew build --parallel --stacktrace --debug  --scan ; \
-    fi
+RUN ./gradlew clean build --no-parallel -Dorg.gradle.workers.max=1
 
 FROM openjdk:21-jdk-slim as prod
 
