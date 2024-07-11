@@ -33,21 +33,11 @@ public class DolphinConfiguration {
         private String prefix;
         private String catalog;
         private ModelSchema schema;
-        private String dbSchema;
-        private String fileSchema;
         private Character specialChar = '"';
         private String omTrinoDatabaseService;
 
         public String getCatalog() {
             return convertKeywordName(catalog);
-        }
-
-        public String getDBSchema() {
-            return convertKeywordName(dbSchema);
-        }
-
-        public String getFileSchema() {
-            return convertKeywordName(fileSchema);
         }
     }
 
@@ -64,6 +54,14 @@ public class DolphinConfiguration {
         private String fernetKey;
         private String apiUrl;
         private String botToken;
+        private IngestionKey ingestion;
+
+        @Getter
+        @Setter
+        public static class IngestionKey {
+            private String metadata;
+            private String profiler;
+        }
     }
 
 

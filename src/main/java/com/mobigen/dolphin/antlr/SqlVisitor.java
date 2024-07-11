@@ -301,8 +301,11 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         var modelName = convertKeywordName(ctx.model_name().getText());
         log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
         var model = catalogName + "." + schemaName + "." + modelName;
+        var tableInfo = openMetadataRepository.getTable(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + model);
         usedModelHistory.add(FusionModelEntity.builder()
                 .job(job)
+                .modelIdOfOM(tableInfo.getId())
+                .fullyQualifiedName(tableInfo.getFullyQualifiedName())
                 .trinoModelName(model)
                 .build());
         return model;

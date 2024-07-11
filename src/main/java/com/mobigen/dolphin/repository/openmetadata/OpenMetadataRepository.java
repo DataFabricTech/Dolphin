@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.entity.openmetadata.*;
+import com.mobigen.dolphin.util.IngestionType;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -107,5 +108,25 @@ public class OpenMetadataRepository {
                 .bodyToMono(String.class)
                 .block();
         log.info(response);
+    }
+
+    public void callIngestion(IngestionType type) {
+        // metadata ingestion 만 호출
+        switch (type) {
+            case METADATA -> callIngestion(dolphinConfiguration.getOpenMetadata().getIngestion().getMetadata());
+            case PROFILER -> callIngestion(dolphinConfiguration.getOpenMetadata().getIngestion().getProfiler());
+        }
+    }
+
+    public void callIngestion(String ingestionId) {
+        log.info("Call ingestion id: {}", ingestionId);
+        var webClient = getWebClient();
+        var response = webClient.post()
+                .uri("/v1/services/ingestionPipelines/trigger/" + ingestionId)
+                .header(HttpHeaders.HOST, dolphinConfiguration.getOpenMetadata().getApiUrl())
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+        log.info("Result of ingestion, id: {}, result: {}", ingestionId, response);
     }
 }

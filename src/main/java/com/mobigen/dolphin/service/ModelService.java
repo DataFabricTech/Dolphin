@@ -13,6 +13,7 @@ import com.mobigen.dolphin.repository.local.ModelQueueRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.Functions;
+import com.mobigen.dolphin.util.IngestionType;
 import com.mobigen.dolphin.util.ModelType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -180,6 +181,7 @@ public class ModelService {
             trinoRepository.execute(sql);
             modelQueueRepository.saveAll(modelQueueEntities);
         }
+        openMetadataRepository.callIngestion(IngestionType.METADATA);
         return ModelDto.builder()
                 .name(createModelDto.getModelName())
                 .build();

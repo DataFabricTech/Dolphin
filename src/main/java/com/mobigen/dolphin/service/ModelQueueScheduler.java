@@ -5,6 +5,7 @@ import com.mobigen.dolphin.entity.openmetadata.LineageEdgeEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMBaseEntity;
 import com.mobigen.dolphin.repository.local.ModelQueueRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
+import com.mobigen.dolphin.util.IngestionType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -28,7 +29,12 @@ public class ModelQueueScheduler {
 
     @Scheduled(fixedRate = 5000)
     public void modelQueueJob() {
-        modelQueueRepository.findAll().forEach(modelQueue -> {
+        var data = modelQueueRepository.findAll();
+        if (data.isEmpty()) {
+            return;
+        }
+        int i = 0;
+        for (var modelQueue : data) {
             OMBaseEntity fromTable;
             OMBaseEntity toTable;
             try {
@@ -47,6 +53,11 @@ public class ModelQueueScheduler {
             } catch (Exception e) {
                 log.error("Failed to add lineage from {} to {}", modelQueue.getFromFqn(), modelQueue.getModelNameFqn(), e);
             }
-        });
+            i++;
+        }
+        if (i > 0) {
+            // sample data 추가 등 profiling 을 위해 ingestion 을 호출
+            openMetadataRepository.callIngestion(IngestionType.PROFILER);
+        }
     }
 }
