@@ -1,0 +1,59 @@
+services:
+#  mysql:
+#    image: ${MYSQL_IMAGE}
+#    ports:
+#      - "5306:3306"
+#    expose:
+#      - '3306'
+#    volumes:
+#      - dbdata:/var/lib/mysqls
+#    environment:
+#      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+#      MYSQL_DATABASE: ${MYSQL_DATABASE}
+#      MYSQL_USER: ${MYSQL_USER}
+#      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  postgres:
+    image: ${POSTGRES_IMAGE}
+    ports:
+      - "6432:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: ${DB_NAME}
+    networks:
+      - db
+  dolphin:
+    image: ${DOLPHIN_IMAGE}
+    ports:
+      - "8080:8080"
+    entrypoint: java -jar -Dspring.config.location=$${CONFIG_FILE} /app/dolphin.jar
+    environment:
+      CONFIG_FILE: /app/application.yml
+      DB_TYPE: ${DB_TYPE}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_DRIVER: ${DB_DRIVER}
+      DB_DDL_AUTO: update
+      TRINO_HOST: 192.168.107.19
+      TRINO_PORT: 9888
+      OPEN_METADATA_HOST: 192.168.105.5
+      OPEN_METADATA_PORT: 8585
+      OPEN_METADATA_TOKEN: "Bearer eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImluZ2VzdGlvbi1ib3QiLCJyb2xlcyI6WyJJbmdlc3Rpb25Cb3RSb2xlIl0sImVtYWlsIjoiaW5nZXN0aW9uLWJvdEBvcGVubWV0YWRhdGEub3JnIiwiaXNCb3QiOnRydWUsInRva2VuVHlwZSI6IkJPVCIsImlhdCI6MTcxNzU3OTA3NiwiZXhwIjpudWxsfQ.tcIYKHJoW9CS51jP2CfqdUEsD_oWCH3KWfXZFAXloZD2k_b2LWdIhEknJeLC1yIJHR4Eg7DQMpzTRd7kLAEz4QNxgQMp-ydCen0Ka0AyYcPgzXOJdUuI9NX7BBAL01B-hE16cRmmd0BCvgmyHT_NMFm0a3X8Xk0d-PO8eq_ZcIYeJj8858fd6xA6ZhAagREOOtT4iz0jUjkDbn-Eqr_v_ZnaxpRg-ioj1J5KQBN0iYpQZRFNoxLxnU4H_BwEsVCnlFjWd0i6JhzSGJazBvVQk6a8PEQ2StHHLG3oWdBRzVu9MT9wFsn_stYkGxs9VqateBG6XPaBmiiCFJH-3ZVzHw"
+      INGESTION_ID_METADATA: 3e3e05ab-7463-404d-9d66-48224aab9d76
+      INGESTION_ID_PROFILER: 3ae11911-744e-41e6-9085-6f97397b058a
+      HIVE_METASTORE_HOST: 192.168.107.19
+      HIVE_METASTORE_PORT: 9083
+    depends_on:
+      - postgres
+    networks:
+      - db
+volumes:
+  dbdata:
+    driver: local
+networks:
+  db:
+    driver: bridge
