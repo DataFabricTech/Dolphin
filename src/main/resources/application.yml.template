@@ -1,39 +1,38 @@
 dolphin:
   model:
-    om-trino-database-service: datamodels
-    catalog: internalhive
+    om-trino-database-service: ${OM_TRINO_SERVICE_NAME:datamodels}
+    catalog: ${TRINO_DATA_MODEL_CATALOG:internalhive}
     schema:
-      db: default
-      file: fileModels
+      db: ${TRINO_DB_BASE_SCHEMA:default}
+      file: ${TRINO_FILE_BASE_SCHEMA:fileModels}
   job:
     datasource:
       hikari:
-        driver-class-name: org.h2.Driver
-        username: sa
-        password:
-        jdbc-url: jdbc:h2:mem:test
+        driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+        username: ${DB_USER}
+        password: ${DB_PASSWORD}
+        jdbc-url: jdbc:${DB_TYPE:mysql}://${DB_HOST}:${DB_PORT}/${DB_NAME}
     hibernate:
       property:
-        "[hibernate.hbm2ddl.auto]": create-drop
+        "[hibernate.hbm2ddl.auto]": ${DB_DDL_AUTO:none}
   trino:
     datasource:
       hikari:
         driver-class-name: io.trino.jdbc.TrinoDriver
-        jdbc-url: jdbc:trino://0.0.0.0:8080
+        jdbc-url: jdbc:trino://${TRINO_HOST:0.0.0.0}:${TRINO_PORT:8080}
         username: dolphin
         password:
     hibernate:
       property:
         "[hibernate.dialect]": org.hibernate.dialect.H2Dialect
   openmetadata:
-    fernetKey: ${FERNET_KEY:default-key}
-    api-url: http://open-metadata/api
-    bot-token: "open-metadata-token"
+    api-url: http://${OPEN_METADATA_HOST:open-metadata}:${OPEN_METADATA_PORT:8585}/api
+    bot-token: ${OPEN_METADATA_TOKEN}
     ingestion:
-      metadata: 3e3e05ab-7463-404d-9d66-48224aab9d76
-      profiler: 3ae11911-744e-41e6-9085-6f97397b058a
+      metadata: ${INGESTION_ID_METADATA}
+      profiler: ${INGESTION_ID_PROFILER}
   hive-metastore:
-    uri: thrift://hive-metastore:9083
+    uri: thrift://${HIVE_METASTORE_HOST}:${HIVE_METASTORE_PORT:9083}
     options:
       hive:
         non-managed-table-writes-enabled: true

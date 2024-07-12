@@ -51,7 +51,6 @@ public class DolphinConfiguration {
     @Getter
     @Setter
     public static class OpenMetadataConfig {
-        private String fernetKey;
         private String apiUrl;
         private String botToken;
         private IngestionKey ingestion;
