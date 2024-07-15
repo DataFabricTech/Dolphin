@@ -1,28 +1,74 @@
 services:
-#  mysql:
-#    image: ${MYSQL_IMAGE}
-#    ports:
-#      - "5306:3306"
-#    expose:
-#      - '3306'
-#    volumes:
-#      - dbdata:/var/lib/mysqls
-#    environment:
-#      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-#      MYSQL_DATABASE: ${MYSQL_DATABASE}
-#      MYSQL_USER: ${MYSQL_USER}
-#      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  #  mysql:
+  #    image: ${MYSQL_IMAGE}
+  #    ports:
+  #      - "5306:3306"
+  #    expose:
+  #      - '3306'
+  #    volumes:
+  #      - dbdata:/var/lib/mysqls
+  #    environment:
+  #      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  #      MYSQL_DATABASE: ${MYSQL_DATABASE}
+  #      MYSQL_USER: ${MYSQL_USER}
+  #      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
   postgres:
     image: ${POSTGRES_IMAGE}
     ports:
       - "6432:5432"
     environment:
       POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
-      POSTGRES_DB: ${DB_NAME}
     networks:
       - db
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: [
+        "CMD-SHELL",
+        "curl -f http://postgres:5432/health && pg_isready -Uadmin -d dolphin && pg_isready -Uadmin -d metastore_db || exit 1"
+      ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+  trino:
+    image: ${TRINO_IMAGE}
+    ports:
+      - 9888:8080
+    volumes:
+      - ./trino/config.properties:/etc/trino/config.properties
+    networks:
+      - trino
+  hive-metastore:
+    image: ${HIVE_METASTORE_IMAGE}
+    ports:
+      - '9083:9083'
+    command:
+      - --verbose
+    environment:
+      SERVICE_NAME: metastore
+      POSTGRES_JDBC_VERSION: 42.7.3
+      DB_DRIVER: postgres
+      SCHEMA_COMMAND: upgradeSchema
+      SERVICE_OPTS: "
+        -Dhive.server2.enable.doAs=false
+        -Dhive.tez.exec.inplace.progress=false
+        -Dtez.runtime.optimize.local.fetch=true
+        -Dhive.exec.submit.local.task.via.child=false
+        -Dtez.local.mode=true
+        -Dhive.execution.engine=tez
+        -Dmetastore.metastore.event.db.notification.api.auth=false
+        -Djavax.jdo.option.ConnectionDriverName=${DB_DRIVER_CLASSPATH}
+        -Djavax.jdo.option.ConnectionURL=jdbc:${DB_TYPE}://postgres:5432/metastore_db
+        -Djavax.jdo.option.ConnectionUserName=${DB_USER}
+        -Djavax.jdo.option.ConnectionPassword=${DB_PASSWORD}"
+    volumes:
+      - ./libs/postgresql-42.7.3.jar:/opt/hive/lib/postgresql-42.7.3.jar
+    networks:
+      - db
+    depends_on:
+      - postgres
   dolphin:
     image: ${DOLPHIN_IMAGE}
     ports:
@@ -35,25 +81,35 @@ services:
       DB_PORT: 5432
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_DRIVER: ${DB_DRIVER}
+      DB_NAME: dolphin
+      DB_DRIVER_CLASSPATH: ${DB_DRIVER_CLASSPATH}
       DB_DDL_AUTO: update
-      TRINO_HOST: 192.168.107.19
-      TRINO_PORT: 9888
+      TRINO_HOST: trino
+      TRINO_PORT: 8080
       OPEN_METADATA_HOST: 192.168.105.5
       OPEN_METADATA_PORT: 8585
       OPEN_METADATA_TOKEN: "Bearer eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImluZ2VzdGlvbi1ib3QiLCJyb2xlcyI6WyJJbmdlc3Rpb25Cb3RSb2xlIl0sImVtYWlsIjoiaW5nZXN0aW9uLWJvdEBvcGVubWV0YWRhdGEub3JnIiwiaXNCb3QiOnRydWUsInRva2VuVHlwZSI6IkJPVCIsImlhdCI6MTcxNzU3OTA3NiwiZXhwIjpudWxsfQ.tcIYKHJoW9CS51jP2CfqdUEsD_oWCH3KWfXZFAXloZD2k_b2LWdIhEknJeLC1yIJHR4Eg7DQMpzTRd7kLAEz4QNxgQMp-ydCen0Ka0AyYcPgzXOJdUuI9NX7BBAL01B-hE16cRmmd0BCvgmyHT_NMFm0a3X8Xk0d-PO8eq_ZcIYeJj8858fd6xA6ZhAagREOOtT4iz0jUjkDbn-Eqr_v_ZnaxpRg-ioj1J5KQBN0iYpQZRFNoxLxnU4H_BwEsVCnlFjWd0i6JhzSGJazBvVQk6a8PEQ2StHHLG3oWdBRzVu9MT9wFsn_stYkGxs9VqateBG6XPaBmiiCFJH-3ZVzHw"
       INGESTION_ID_METADATA: 3e3e05ab-7463-404d-9d66-48224aab9d76
       INGESTION_ID_PROFILER: 3ae11911-744e-41e6-9085-6f97397b058a
-      HIVE_METASTORE_HOST: 192.168.107.19
+      HIVE_METASTORE_HOST: hive-metastore
       HIVE_METASTORE_PORT: 9083
+    healthcheck:
+      test: ["CMD-SHELL", "echo 1"]
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
     depends_on:
       - postgres
+      - trino
     networks:
       - db
+      - trino
 volumes:
   dbdata:
     driver: local
 networks:
   db:
+    driver: bridge
+  trino:
     driver: bridge

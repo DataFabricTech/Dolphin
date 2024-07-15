@@ -82,7 +82,7 @@ public class TrinoConfiguration {
         boolean isConnected = false;
         try (var connection = trinoDataSource().getConnection();
              var statement = connection.prepareStatement("select 1")) {
-            log.info("DB is connected : {}", statement.execute());
+            log.info("Trino is connected : {}", statement.execute());
             isConnected = true;
         } catch (SQLException e) {
             log.error(e.getMessage());

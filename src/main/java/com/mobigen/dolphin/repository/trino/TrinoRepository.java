@@ -8,6 +8,7 @@ import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.trino.extractor.ExtractType;
 import com.mobigen.dolphin.repository.trino.extractor.ResultSetExtractorFactory;
 import com.mobigen.dolphin.util.Functions;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.UncategorizedSQLException;
@@ -32,6 +33,27 @@ import java.util.UUID;
 public class TrinoRepository {
     private final DolphinConfiguration dolphinConfiguration;
     private final JdbcTemplate trinoJdbcTemplate;
+
+    @PostConstruct
+    public void getOrCreateMetastoreCatalog() {
+        var catalogs = getCatalogs();
+        var catalogName = dolphinConfiguration.getModel().getCatalog();
+        boolean makeCatalog = true;
+        for (var catalog : catalogs) {
+            if (catalog.equals(catalogName)) {
+                log.info("Already created trino catalog {}", catalogName);
+                makeCatalog = false;
+                break;
+            }
+        }
+        if (makeCatalog) {
+            execute("create catalog " + catalogName
+                    + " using hive"
+                    + " with ("
+                    + " \"hive.metastore.uri\" = '" + dolphinConfiguration.getHiveMetastore().getUri() + "'"
+                    + ")");
+        }
+    }
 
     public List<ModelDto> getModelList() {
         // SHOW TABLES [ FROM schema ] [ LIKE pattern ]
