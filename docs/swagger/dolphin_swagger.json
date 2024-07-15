@@ -1,1 +1,710 @@
-{"openapi":"3.0.1","info":{"title":"OpenAPI definition","version":"v0"},"servers":[{"url":"http://localhost:8080","description":"Generated server url"}],"paths":{"/dolphin/v1/query/execute":{"post":{"tags":["Dolphin Main API"],"summary":"Execute Query using DataModel","operationId":"execute","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExecuteDto"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/QueryResultDTO"}}}}}}},"/dolphin/v1/query/async/execute":{"post":{"tags":["Dolphin Main API"],"summary":"Async Execute Query using DataModel","operationId":"asyncExecute","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/ExecuteDto"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object"}}}}}}},"/dolphin/v1/model":{"get":{"tags":["Dolphin Main API"],"summary":"Get dataModels","description":"Returns list of dataModels","operationId":"getModels","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"array","items":{"$ref":"#/components/schemas/ModelDto"}}}}}}},"post":{"tags":["Dolphin Main API"],"summary":"Create dataModel","description":"Create a dataModel by method (MODEL, QUERY, CONNECTOR)","operationId":"addModel","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/CreateModelDto"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ModelDto"}}}}}}},"/dolphin/v1/model/file":{"post":{"tags":["Dolphin Main API"],"summary":"Create dataModel with File","description":"Create a dataModel by method (MODEL, QUERY, CONNECTOR)","operationId":"addModelWithFile","requestBody":{"content":{"multipart/form-data":{"schema":{"required":["createModelDto","file"],"type":"object","properties":{"createModelDto":{"$ref":"#/components/schemas/CreateModelWithFileDto"},"file":{"type":"string","format":"binary"}}}}}},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/ModelDto"}}}}}}},"/dolphin/open-metadata/notify":{"post":{"tags":["om-notify-controller"],"summary":"Handle processing of OpenMetadata Notification","operationId":"notify","requestBody":{"content":{"application/json":{"schema":{"$ref":"#/components/schemas/OMNotifyDto"}}},"required":true},"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"string"}}}}}}},"/dolphin/v1/query/status/{job_id}":{"get":{"tags":["Dolphin Main API"],"summary":"Check status of asynchronous query job using JobId","operationId":"status","parameters":[{"name":"job_id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object"}}}}}}},"/dolphin/v1/query/read/{job_id}":{"get":{"tags":["Dolphin Main API"],"summary":"Read result data of asynchronous query using JobId","operationId":"read","parameters":[{"name":"job_id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object"}}}}}}},"/dolphin/v1/query/download/{job_id}":{"get":{"tags":["Dolphin Main API"],"summary":"Download result data of asynchronous query using JobId","operationId":"download","parameters":[{"name":"job_id","in":"path","required":true,"schema":{"type":"string","format":"uuid"}}],"responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"type":"object"}}}}}}},"/api/status":{"get":{"tags":["status-controller"],"summary":"Check the server is available","operationId":"status_1","responses":{"200":{"description":"OK","content":{"*/*":{"schema":{"$ref":"#/components/schemas/MessageDto"}}}}}}}},"components":{"schemas":{"ExecuteDto":{"type":"object","properties":{"query":{"type":"string","description":"Sql select query using DataModel","example":"select * from model_test_1"},"referenceModels":{"type":"array","items":{"$ref":"#/components/schemas/ReferenceModel"}}}},"ReferenceModel":{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"name":{"type":"string"},"fullyQualifiedName":{"type":"string"}}},"Column":{"type":"object","properties":{"name":{"type":"string"},"type":{"type":"string","enum":["BOOL","TEXT","INTEGER","BIGINT","REAL","UNDEFINED"]},"comment":{"type":"string"}}},"QueryResultDTO":{"type":"object","properties":{"jobId":{"type":"string","format":"uuid"},"columns":{"type":"array","items":{"$ref":"#/components/schemas/Column"}},"rows":{"type":"array","items":{"type":"array","items":{"type":"object"}}},"totalCount":{"type":"integer","format":"int32"}}},"BaseModel":{"type":"object","properties":{"type":{"type":"string","description":"Type of base DataModel (MODEL, QUERY, CONNECTOR)","enum":["MODEL","QUERY","CONNECTOR"]},"selectedColumnNames":{"type":"array","description":"Select columns, default = *","items":{"type":"string","description":"Select columns, default = *"}},"model":{"type":"string","description":"DataModel name"},"query":{"type":"string","description":"Sql select query using DataModel","example":"select * from model_test_1"},"connectorId":{"type":"string","description":"Id of OpenMetadata DBService","format":"uuid"},"database":{"type":"string","description":"Database name"},"table":{"type":"string","description":"Table name"}},"description":"Conditions of base DataModel"},"CreateModelDto":{"type":"object","properties":{"modelName":{"type":"string","description":"DataModel name to create","example":"model_test_1"},"baseModel":{"$ref":"#/components/schemas/BaseModel"},"joins":{"type":"array","description":"Conditions for join","items":{"$ref":"#/components/schemas/JoinModel"}}}},"JoinModel":{"type":"object","properties":{"joinType":{"type":"string","enum":["INNER"]},"model":{"type":"string"},"on":{"type":"string"}},"description":"Conditions for join"},"ModelDto":{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"name":{"type":"string"},"description":{"type":"string"}}},"CreateModelWithFileDto":{"type":"object","properties":{"modelName":{"type":"string","description":"DataModel name to create","example":"model_test_1"},"comment":{"type":"string","description":"comment"},"path":{"type":"string","description":"path of file"},"fileId":{"type":"string","description":"Id of file"},"fullyQualifiedName":{"type":"string"},"storageId":{"type":"string","format":"uuid"}}},"OMNotifyDto":{"type":"object","properties":{"id":{"type":"string","format":"uuid"},"entityType":{"type":"string","enum":["DATABASE_SERVICE","STORAGE_SERVICE","DATABASE_SCHEMA","DATABASE","TABLE","INGESTION_PIPELINE","UNSUPPORTED"]},"entityId":{"type":"string","format":"uuid"},"previousVersion":{"type":"number","format":"float"},"currentVersion":{"type":"number","format":"float"},"userName":{"type":"string"},"timestamp":{"type":"integer","format":"int64"},"entity":{"type":"string"},"eventType":{"type":"string","enum":["ENTITY_CREATED","ENTITY_UPDATED","ENTITY_SOFT_DELETED","ENTITY_RESTORED","ENTITY_DELETED","UNSUPPORTED"]}}},"MessageDto":{"type":"object","properties":{"code":{"type":"integer","format":"int32"},"message":{"type":"string"}}}}}}
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/dolphin/v1/query/execute": {
+      "post": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Execute Query using DataModel (it always shows limited results, default: 500)",
+        "operationId": "execute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryResultDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/v1/query/async/execute": {
+      "post": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Async Execute Query using DataModel",
+        "operationId": "asyncExecute",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryResultDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/v1/model": {
+      "get": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Get dataModels",
+        "description": "Returns list of dataModels",
+        "operationId": "getModels",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ModelDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Create dataModel",
+        "description": "Create a dataModel by method (MODEL, QUERY, CONNECTOR)",
+        "operationId": "addModel",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateModelDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/v1/model/file": {
+      "post": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Create dataModel with File",
+        "description": "Create a dataModel by method (MODEL, QUERY, CONNECTOR)",
+        "operationId": "addModelWithFile",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "createModelDto",
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "createModelDto": {
+                    "$ref": "#/components/schemas/CreateModelWithFileDto"
+                  },
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/open-metadata/notify": {
+      "post": {
+        "tags": [
+          "om-notify-controller"
+        ],
+        "summary": "Handle processing of OpenMetadata Notification",
+        "operationId": "notify",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OMNotifyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/v1/query/status/{job_id}": {
+      "get": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Check status of asynchronous query job using JobId",
+        "operationId": "status",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/v1/query/read": {
+      "get": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Read result data of asynchronous query using JobId",
+        "operationId": "read",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/v1/query/download/{job_id}": {
+      "get": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "summary": "Download result data of asynchronous query using JobId",
+        "operationId": "download",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dolphin/v1/model/recommend": {
+      "get": {
+        "tags": [
+          "Dolphin Main API"
+        ],
+        "operationId": "recommendModels",
+        "parameters": [
+          {
+            "name": "fully_qualified_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "model_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "tags": [
+          "status-controller"
+        ],
+        "summary": "Check the server is available",
+        "operationId": "status_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ExecuteDto": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Sql select query using DataModel",
+            "example": "select * from model_test_1"
+          },
+          "referenceModels": {
+            "type": "array",
+            "description": "Model information of OpenMetadata referenced by the model used in the sql query",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceModel"
+            }
+          },
+          "limit": {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Limit of result rows",
+            "format": "int32"
+          },
+          "page": {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Start page of result rows",
+            "format": "int32"
+          }
+        }
+      },
+      "ReferenceModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fullyQualifiedName": {
+            "type": "string"
+          }
+        },
+        "description": "Model information of OpenMetadata referenced by the model used in the sql query"
+      },
+      "Column": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dataType": {
+            "type": "string",
+            "enum": [
+              "BOOL",
+              "TEXT",
+              "INTEGER",
+              "BIGINT",
+              "REAL",
+              "UNDEFINED"
+            ]
+          },
+          "comment": {
+            "type": "string"
+          }
+        }
+      },
+      "QueryResultDto": {
+        "type": "object",
+        "properties": {
+          "jobId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Column"
+            }
+          },
+          "resultData": {
+            "$ref": "#/components/schemas/ResultData"
+          },
+          "totalRows": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPages": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "page": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ResultData": {
+        "type": "object",
+        "properties": {
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "BaseModel": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of base DataModel (MODEL, QUERY, CONNECTOR)",
+            "enum": [
+              "MODEL",
+              "QUERY",
+              "CONNECTOR"
+            ]
+          },
+          "query": {
+            "type": "string",
+            "description": "Sql select query using DataModel",
+            "example": "select * from model_test_1"
+          },
+          "referenceModels": {
+            "type": "array",
+            "description": "Model information of OpenMetadata referenced by the model used in the sql query",
+            "items": {
+              "$ref": "#/components/schemas/ReferenceModel"
+            }
+          },
+          "selectedColumnNames": {
+            "type": "array",
+            "description": "Select columns, default = *",
+            "items": {
+              "type": "string",
+              "description": "Select columns, default = *"
+            }
+          },
+          "model": {
+            "type": "string",
+            "description": "DataModel name"
+          },
+          "connectorId": {
+            "type": "string",
+            "description": "Id of OpenMetadata DBService",
+            "format": "uuid"
+          },
+          "database": {
+            "type": "string",
+            "description": "Database name"
+          },
+          "table": {
+            "type": "string",
+            "description": "Table name"
+          }
+        },
+        "description": "Conditions of base DataModel"
+      },
+      "CreateModelDto": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "description": "DataModel name to create",
+            "example": "model_test_1"
+          },
+          "baseModel": {
+            "$ref": "#/components/schemas/BaseModel"
+          },
+          "joins": {
+            "type": "array",
+            "description": "Conditions for join",
+            "items": {
+              "$ref": "#/components/schemas/JoinModel"
+            }
+          }
+        }
+      },
+      "JoinModel": {
+        "type": "object",
+        "properties": {
+          "joinType": {
+            "type": "string",
+            "enum": [
+              "INNER"
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "on": {
+            "type": "string"
+          }
+        },
+        "description": "Conditions for join"
+      },
+      "ModelDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateModelWithFileDto": {
+        "type": "object",
+        "properties": {
+          "modelName": {
+            "type": "string",
+            "description": "DataModel name to create",
+            "example": "model_test_1"
+          },
+          "comment": {
+            "type": "string",
+            "description": "comment"
+          },
+          "path": {
+            "type": "string",
+            "description": "path of file"
+          },
+          "fileId": {
+            "type": "string",
+            "description": "Id of file"
+          },
+          "fullyQualifiedName": {
+            "type": "string"
+          },
+          "storageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "OMNotifyDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "entityType": {
+            "type": "string",
+            "enum": [
+              "DATABASE_SERVICE",
+              "STORAGE_SERVICE",
+              "DATABASE_SCHEMA",
+              "DATABASE",
+              "table",
+              "INGESTION_PIPELINE",
+              "UNSUPPORTED"
+            ]
+          },
+          "entityId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "previousVersion": {
+            "type": "number",
+            "format": "float"
+          },
+          "currentVersion": {
+            "type": "number",
+            "format": "float"
+          },
+          "userName": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "entity": {
+            "type": "string"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "ENTITY_CREATED",
+              "ENTITY_UPDATED",
+              "ENTITY_SOFT_DELETED",
+              "ENTITY_RESTORED",
+              "ENTITY_DELETED",
+              "UNSUPPORTED"
+            ]
+          }
+        }
+      },
+      "MessageDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

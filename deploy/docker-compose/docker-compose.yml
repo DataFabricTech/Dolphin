@@ -40,6 +40,7 @@ services:
       - ./trino/config.properties:/etc/trino/config.properties
     networks:
       - trino
+      - hive-metastore
   hive-metastore:
     image: ${HIVE_METASTORE_IMAGE}
     ports:
@@ -50,7 +51,6 @@ services:
       SERVICE_NAME: metastore
       POSTGRES_JDBC_VERSION: 42.7.3
       DB_DRIVER: postgres
-      SCHEMA_COMMAND: upgradeSchema
       SERVICE_OPTS: "
         -Dhive.server2.enable.doAs=false
         -Dhive.tez.exec.inplace.progress=false
@@ -67,6 +67,7 @@ services:
       - ./libs/postgresql-42.7.3.jar:/opt/hive/lib/postgresql-42.7.3.jar
     networks:
       - db
+      - hive-metastore
     depends_on:
       - postgres
   dolphin:
@@ -110,6 +111,5 @@ volumes:
     driver: local
 networks:
   db:
-    driver: bridge
   trino:
-    driver: bridge
+  hive-metastore:
