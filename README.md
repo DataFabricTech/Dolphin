@@ -67,6 +67,10 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 
 ![sql syntax](./docs/imgs/SQL_Syntax.png)
 
+## Dolphin Table 구조
+
+- [테이블 설명 문서](./docs/DB_Structures.md) 참고
+
 ## Deployments
 
 - [배포 문서](./docs/Deployment.md) 참고
@@ -86,11 +90,11 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 
 #### Install with Docker
 
-- [RabbitMQ](./docs/dependencies/RabbitMQ.md)
+- [RabbitMQ](./docs/dependencies/RabbitMQ.md) 참고
 - RDBMS (default: H2)
-- [Hive3 MetaStore](./docs/dependencies/Hive.md)
-- [Trino](./docs/dependencies/Trino.md)
-- FileSystem (default: [MinIO](./docs/dependencies/MinIO.md))
+- [Hive3 MetaStore](./docs/dependencies/Hive.md) 참고
+- [Trino](./docs/dependencies/Trino.md) 참고
+- FileSystem (default: [MinIO](./docs/dependencies/MinIO.md)) 참고
 
 #### Install with Kubernetes and Helm
 
