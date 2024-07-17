@@ -67,6 +67,10 @@ Data Operations and Processing with Logically Integrated High-performance INtegr
 
 ![sql syntax](./docs/imgs/SQL_Syntax.png)
 
+## Deployments
+
+- [배포 문서](./docs/Deployment.md) 참고
+
 ## Develop Guide
 
 ### Commit Type
