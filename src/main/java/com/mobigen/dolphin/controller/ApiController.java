@@ -5,6 +5,9 @@ import com.mobigen.dolphin.dto.request.CreateModelWithFileDto;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.ModelDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
+import com.mobigen.dolphin.dto.response.RecommendModelDto;
+import com.mobigen.dolphin.entity.local.JobEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
 import com.mobigen.dolphin.service.ModelService;
 import com.mobigen.dolphin.service.QueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -69,7 +72,7 @@ public class ApiController {
 
     @Operation(summary = "Read result data of asynchronous query using JobId")
     @GetMapping("/query/read")
-    public Object read(
+    public QueryResultDto read(
             @RequestParam("job_id")
             @Pattern(regexp = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$") String jobId,
             @RequestParam(required = false, defaultValue = "0") @Min(0) Integer page,
@@ -86,13 +89,35 @@ public class ApiController {
 
     @Operation(summary = "Check status of asynchronous query job using JobId")
     @GetMapping("/query/status/{job_id:^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$}")
-    public Object status(@PathVariable("job_id") UUID jobId) {
+    public JobEntity.JobStatus status(@PathVariable("job_id") UUID jobId) {
         return queryService.status(jobId);
     }
 
+    @Operation(summary = "Get the list of related models previously used in the query")
     @GetMapping("/model/recommend")
-    public Object recommendModels(@RequestParam(required = false, name = "fully_qualified_name") String fullyQualifiedName,
-                                  @RequestParam(required = false, name = "model_id") UUID modelId) {
+    public List<RecommendModelDto> recommendModels(@RequestParam(required = false, name = "fully_qualified_name") String fullyQualifiedName,
+                                                   @RequestParam(required = false, name = "model_id") UUID modelId) {
         return modelService.getRecommendModels(fullyQualifiedName, modelId);
+    }
+
+    @Operation(summary = "Get list of DatabaseServices of OpenMetadata")
+    @GetMapping("/open-metadata/connector")
+    public List<OMDBServiceEntity> getOpenMetadataConnectors(
+            @RequestParam(required = false) String fields,
+            @RequestParam(required = false) String domain,
+            @RequestParam(required = false, defaultValue = "10") Integer limit
+    ) {
+        return modelService.getOpenMetadataDBServices(fields, domain, limit);
+    }
+
+    @Operation(summary = "Get list of Tables of OpenMetadata")
+    @GetMapping("/open-metadata/model")
+    public Object getOpenMetadataModels(
+            @RequestParam(required = false) String fields,
+            @RequestParam(required = false) String database,
+            @RequestParam(required = false) String databaseSchema,
+            @RequestParam(required = false, defaultValue = "10") Integer limit
+    ) {
+        return modelService.getOpenMetadataTables(fields, database, databaseSchema, limit);
     }
 }

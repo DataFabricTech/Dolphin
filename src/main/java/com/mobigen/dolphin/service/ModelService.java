@@ -5,9 +5,11 @@ import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.CreateModelDto;
 import com.mobigen.dolphin.dto.request.CreateModelWithFileDto;
 import com.mobigen.dolphin.dto.response.ModelDto;
+import com.mobigen.dolphin.dto.response.RecommendModelDto;
 import com.mobigen.dolphin.entity.local.ModelQueueEntity;
 import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
 import com.mobigen.dolphin.repository.local.ModelQueueRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
@@ -197,8 +199,16 @@ public class ModelService {
                 .build();
     }
 
-    public Object getRecommendModels(String fullyQualifiedName, UUID modelId) {
+    public List<RecommendModelDto> getRecommendModels(String fullyQualifiedName, UUID modelId) {
         // select model_id, fqn from fusionModel where job_id in (select job_id from fusionModel where fqn = '' or model_id = '')
         return fusionModelRepository.findAllByFullyQualifiedNameOrModelIdOfOM(fullyQualifiedName, modelId);
+    }
+
+    public List<OMDBServiceEntity> getOpenMetadataDBServices(String fields, String domain, Integer limit) {
+        return openMetadataRepository.getConnectors(fields, domain, limit);
+    }
+
+    public List<OMTableEntity> getOpenMetadataTables(String fields, String database, String databaseSchema, Integer limit) {
+        return openMetadataRepository.getTables(fields, database, databaseSchema, limit);
     }
 }

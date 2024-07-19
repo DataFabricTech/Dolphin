@@ -1,6 +1,8 @@
 package com.mobigen.dolphin.repository.openmetadata;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.entity.openmetadata.*;
@@ -13,12 +15,12 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
 import java.nio.file.Path;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
 
 /**
  * <p>
@@ -46,6 +48,80 @@ public class OpenMetadataRepository {
                 .baseUrl(dolphinConfiguration.getOpenMetadata().getApiUrl())
                 .defaultHeader(HttpHeaders.AUTHORIZATION, dolphinConfiguration.getOpenMetadata().getBotToken())
                 .build();
+    }
+
+    public String getResponse(Function<UriBuilder, URI> uriFunction) {
+        var webClient = getWebClient();
+        return webClient.get()
+                .uri(uriFunction)
+                .accept(MediaType.APPLICATION_JSON)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+    }
+
+    public List<OMDBServiceEntity> getConnectors(String fields, String domain, Integer limit) {
+        var response = getResponse(uriBuilder -> {
+            uriBuilder = uriBuilder
+                    .path("/v1/services/databaseServices");
+            if (fields != null) {
+                uriBuilder = uriBuilder.queryParam("fields", fields);
+            }
+            if (domain != null) {
+                uriBuilder = uriBuilder.queryParam("domain", domain);
+            }
+            if (limit != null) {
+                uriBuilder = uriBuilder.queryParam("limit", limit);
+            }
+            return uriBuilder.build();
+        });
+
+        var mapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        try {
+            var responseJson = mapper.readTree(response);
+            var connectors = new ArrayList<OMDBServiceEntity>();
+            for (JsonNode jsonNode : responseJson.get("data")) {
+                connectors.add(mapper.convertValue(jsonNode, OMDBServiceEntity.class));
+            }
+            return connectors;
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            return List.of();
+        }
+    }
+
+    public List<OMTableEntity> getTables(String fields, String database, String databaseSchema, Integer limit) {
+        var response = getResponse(uriBuilder -> {
+            uriBuilder = uriBuilder
+                    .path("/v1/tables");
+            if (fields != null) {
+                uriBuilder = uriBuilder.queryParam("fields", fields);
+            }
+            if (database != null) {
+                uriBuilder = uriBuilder.queryParam("database", database);
+            }
+            if (databaseSchema != null) {
+                uriBuilder = uriBuilder.queryParam("databaseSchema", databaseSchema);
+            }
+            if (limit != null) {
+                uriBuilder = uriBuilder.queryParam("limit", limit);
+            }
+            return uriBuilder.build();
+        });
+        var mapper = new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        try {
+            var responseJson = mapper.readTree(response);
+            var tables = new ArrayList<OMTableEntity>();
+            for (JsonNode jsonNode : responseJson.get("data")) {
+                tables.add(mapper.convertValue(jsonNode, OMTableEntity.class));
+            }
+            return tables;
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+            return List.of();
+        }
     }
 
     @AssertTrue(message = "Fail to get databaseService information from OpenMetadata")

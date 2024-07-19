@@ -119,7 +119,7 @@ public class QueryService {
                 .build();
     }
 
-    public Object status(UUID jobId) {
+    public JobEntity.JobStatus status(UUID jobId) {
         log.info("Get status: {}", jobId);
         var job = jobRepository.findById(jobId);
         if (job.isEmpty()) {
