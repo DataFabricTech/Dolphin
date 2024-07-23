@@ -45,6 +45,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
 
     private final char SPECIAL_CHAR = '"';
     private final Map<String, String> modelCache = new HashMap<>();
+    private final List<String> modelAliases = new ArrayList<>();
     private final List<FusionModelEntity> usedModelHistory = new ArrayList<>();
 
     @Override
@@ -102,8 +103,8 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
     @Override
     public String visitSelect_core(ModelSqlParser.Select_coreContext ctx) {
         // visit 순서 제어
-        String select = visitSelect_(ctx.select_());
         String from_ = visitFrom_(ctx.from_());
+        String select = visitSelect_(ctx.select_());
         String where_ = visitWhere_(ctx.where_());
         String groupBy_ = visitGroup_by_(ctx.group_by_());
         return select + from_ + where_ + groupBy_;
@@ -255,7 +256,9 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
             result = "(" + visitJoin_clause(ctx.join_clause()) + ")";
         }
         if (ctx.table_alias() != null) {
-            result = result + " as " + convertKeywordName(ctx.table_alias().getText());
+            var alias = convertKeywordName(ctx.table_alias().getText());
+            modelAliases.add(alias);
+            result = result + " as " + alias;
         }
         return result;
     }
@@ -309,6 +312,20 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
                 .trinoModelName(model)
                 .build());
         return model;
+    }
+
+    @Override
+    public String visitColumn_term(ModelSqlParser.Column_termContext ctx) {
+        var columnName = visitColumn_name(ctx.column_name());
+        if (ctx.model_term() != null) {
+            var alias = convertKeywordName(ctx.model_term().getText());
+            if (modelAliases.contains(alias)) {
+                columnName = alias + "." + columnName;
+            } else {
+                columnName = visitModel_term(ctx.model_term()) + "." + columnName;
+            }
+        }
+        return columnName;
     }
 
     @Override

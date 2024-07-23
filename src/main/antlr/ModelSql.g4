@@ -95,7 +95,7 @@ expr
 : literal_value
 | BIND_PARAMETER
 | function_name OPEN_PAR function_arguments CLOSE_PAR
-| (model_term DOT)? column_name
+| column_term
 | unary_operator expr
 | expr PIPE2 expr
 | expr (STAR | DIV | MOD) expr
@@ -142,6 +142,10 @@ table_or_subquery
 
 model_term
 : ((catalog_name DOT)? schema_name DOT)? model_name
+;
+
+column_term
+: (model_term DOT)? column_name
 ;
 
 function_arguments
