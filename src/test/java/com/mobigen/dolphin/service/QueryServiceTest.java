@@ -3,22 +3,29 @@ package com.mobigen.dolphin.service;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.entity.local.JobEntity;
-import com.mobigen.dolphin.repository.local.FusionModelRepository;
+import com.mobigen.dolphin.entity.openmetadata.OMBaseEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.DolphinType;
-import org.junit.Ignore;
+import com.mobigen.dolphin.util.TrinoInit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 
@@ -29,8 +36,9 @@ import static org.mockito.Mockito.doNothing;
  * @version 0.0.1
  * @since 0.0.1
  */
-@Ignore
+@ActiveProfiles("test")
 @SpringBootTest
+@TestConfiguration
 class QueryServiceTest {
     @Mock
     private TrinoRepository trinoRepository;
@@ -38,9 +46,10 @@ class QueryServiceTest {
     private OpenMetadataRepository openMetadataRepository;
     @Mock
     private JobRepository jobRepository;
-    @Mock
-    private FusionModelRepository fusionModelRepository;
+    @MockBean
+    private TrinoInit trinoInit;
     @InjectMocks
+    @Autowired
     private QueryService queryService;
 
     @BeforeEach
@@ -53,10 +62,21 @@ class QueryServiceTest {
                 )
                 .build()))
                 .when(jobRepository).findById(any());
-        doNothing().when(jobRepository).save(any());
-        doAnswer(x -> "ok").when(trinoRepository).getOrCreateMetastoreCatalog();
         doAnswer(x -> List.of("ok")).when(trinoRepository).getCatalogs();
         doNothing().when(trinoRepository).execute(any());
+        var exampleTable = OMTableEntity.builder()
+                .name("result_data_1")
+                .service(OMBaseEntity.builder()
+                        .id(UUID.randomUUID())
+                        .build())
+                .serviceType("postgres")
+                .database(OMDBServiceEntity.builder()
+                        .name("public")
+                        .build())
+                .build();
+        doAnswer(x -> exampleTable).when(openMetadataRepository).getTable((UUID) any());
+        doAnswer(x -> exampleTable).when(openMetadataRepository).getTable(anyString());
+        doAnswer(x -> exampleTable).when(openMetadataRepository).getTable(anyString(), any());
     }
 
     @Test
