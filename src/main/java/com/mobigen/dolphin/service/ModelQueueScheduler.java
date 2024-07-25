@@ -52,10 +52,10 @@ public class ModelQueueScheduler {
                 openMetadataRepository.addLineageEdge(lineageEdgeEntity);
                 modelQueueRepository.delete(modelQueue);
                 log.info("Succeed to add lineage from {} to {}", modelQueue.getFromFqn(), modelQueue.getModelNameFqn());
+                i++;
             } catch (Exception e) {
                 log.error("Failed to add lineage from {} to {}", modelQueue.getFromFqn(), modelQueue.getModelNameFqn(), e);
             }
-            i++;
         }
         if (i > 0) {
             // sample data 추가 등 profiling 을 위해 ingestion 을 호출

@@ -93,6 +93,9 @@ public class ModelService {
                 } else {
                     dbms = omdbServiceEntity.getServiceType().toLowerCase();
                     password = connInfo.getPassword();
+                    if (password == null) {
+                        password = connInfo.getAuthType().getPassword();
+                    }
                 }
                 var jdbcURL = "jdbc:" + dbms + "://" + connInfo.getHostPort();
                 if (!List.of("mariadb", "mysql").contains(dbms)  // mariadb/mysql 의 경우 trino 에서 jdbc-url 에 db 세팅을 하지 않도록 되어 있어서 제외
@@ -105,7 +108,8 @@ public class ModelService {
                         + " with ("
                         + " \"connection-url\" = '" + jdbcURL + "', "
                         + " \"connection-user\" = '" + username + "', "
-                        + " \"connection-password\" = '" + password + "')";
+                        + " \"connection-password\" = '" + password + "', "
+                        + " \"case-insensitive-name-matching\" = 'true')";
             }
             trinoRepository.execute(createQuery);
         }
@@ -145,7 +149,8 @@ public class ModelService {
                         + ".public"
                         + "." + createModelDto.getBaseModel().getTable();
             } else {  // mariadb, mysql
-                fqn = connInfo.getFullyQualifiedName() + ".default"
+                fqn = connInfo.getFullyQualifiedName()
+                        + "." + createModelDto.getBaseModel().getSchema()
                         + "." + createModelDto.getBaseModel().getDatabase()
                         + "." + createModelDto.getBaseModel().getTable();
             }

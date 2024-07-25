@@ -50,6 +50,8 @@ public class CreateModelDto {
         private UUID connectorId;
         @Schema(description = "Database name")
         private String database;
+        @Schema(description = "Schema name")
+        private String schema;
         @Schema(description = "Table name")
         private String table;
     }

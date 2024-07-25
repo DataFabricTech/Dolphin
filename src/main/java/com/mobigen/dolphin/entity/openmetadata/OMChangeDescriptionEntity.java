@@ -14,15 +14,15 @@ import java.util.List;
 
 @Data
 public class OMChangeDescriptionEntity {
-    private List<String> fieldsAdded;
-    private List<FieldsUpdatedEntity> fieldsUpdated;
-    private List<String> fieldsDeleted;
+    private List<FieldsEntity> fieldsAdded;
+    private List<FieldsEntity> fieldsUpdated;
+    private List<FieldsEntity> fieldsDeleted;
     private Float previousVersion;
 
     @Data
-    public static class FieldsUpdatedEntity {
+    public static class FieldsEntity {
         private String name;
-        private Boolean oldValue;
-        private Boolean newValue;
+        private Object oldValue;
+        private Object newValue;
     }
 }
