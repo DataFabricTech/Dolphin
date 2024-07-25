@@ -60,14 +60,14 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
 
     @Override
     public String visitParse(ModelSqlParser.ParseContext ctx) {
-        return visitSql_stmt(ctx.sql_stmt());
+        return visitSql_stmt(ctx.sql_stmt()).strip();
     }
 
     @Override
     public String visitSql_stmt(ModelSqlParser.Sql_stmtContext ctx) {
         String explain = ctx.K_EXPLAIN() == null ? "" : ctx.K_EXPLAIN().getText();
 
-        return explain + visitSelect_stmt(ctx.select_stmt());
+        return explain + " " + visitSelect_stmt(ctx.select_stmt()).strip();
     }
 
     @Override
@@ -75,12 +75,12 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         var selectCoreBuilder = new StringBuilder(visitSelect_core(ctx.select_core(0)));
         for (var i = 0; i < ctx.compound_operator().size(); i++) {
             selectCoreBuilder.append(visitCompound_operator(ctx.compound_operator(i)))
-                    .append(visitSelect_core(ctx.select_core(i + 1)));
+                    .append(visitSelect_core(ctx.select_core(i + 1)).strip());
         }
         var selectCore_ = selectCoreBuilder.toString();
         var orderBy_ = visitOrder_by_(ctx.order_by_());
         var limit_ = visitLimit_(ctx.limit_());
-        return selectCore_ + orderBy_ + limit_;
+        return selectCore_.strip() + orderBy_ + limit_;
     }
 
     @Override
@@ -185,14 +185,12 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         if (ctx.COMMA() != null) {
             offsetValue = ctx.INTEGER_LITERAL(0);
             builder.append(" offset ")
-                    .append(offsetValue)
-                    .append(" ");
+                    .append(offsetValue);
             limitValue = ctx.INTEGER_LITERAL(1);
         } else if (ctx.K_OFFSET() != null) {
             offsetValue = ctx.INTEGER_LITERAL(1);
             builder.append(" offset ")
-                    .append(offsetValue)
-                    .append(" ");
+                    .append(offsetValue);
             limitValue = ctx.INTEGER_LITERAL(0);
         } else {
             limitValue = ctx.INTEGER_LITERAL(0);
@@ -280,7 +278,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
                             openMetadataRepository.getTable(referenceModel.getId());
                     var catalogName = Functions.getCatalogName(tableInfo.getService().getId());
                     String schemaName;
-                    if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
+                    if ("postgres" .equalsIgnoreCase(tableInfo.getServiceType())) {
                         schemaName = tableInfo.getDatabaseSchema().getName();
                     } else {
                         schemaName = tableInfo.getDatabase().getName();
