@@ -27,6 +27,7 @@ class FunctionsTest {
         assertEquals("\"from\"", Functions.convertKeywordName("from"));
         assertEquals("foo", Functions.convertKeywordName("foo"));
         assertEquals("\"foo\"", Functions.convertKeywordName("`foo`"));
+        assertEquals("\"한글\"", Functions.convertKeywordName("한글"));
     }
 
     @Test
