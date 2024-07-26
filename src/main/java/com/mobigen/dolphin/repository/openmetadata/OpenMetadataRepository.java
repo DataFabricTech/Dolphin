@@ -142,6 +142,24 @@ public class OpenMetadataRepository {
         return response;
     }
 
+    @AssertTrue(message = "Fail to get databaseService information from OpenMetadata")
+    public OMDBServiceEntity getConnectorInfo(String fqn, EntityType entityType) {
+        String urn;
+        if (entityType.equals(EntityType.DATABASE_SERVICE)) {
+            urn = "/v1/services/databaseServices/name/" + fqn;
+        } else {
+            urn = "/v1/services/storageServices/name/" + fqn;
+        }
+        var webClient = getWebClient();
+        var response = webClient.get()
+                .uri(urn)
+                .retrieve()
+                .bodyToMono(OMDBServiceEntity.class)
+                .block();
+        log.info(Objects.requireNonNull(response).toString());
+        return response;
+    }
+
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
     public OMTableEntity getTable(UUID id) {
         var webClient = getWebClient();

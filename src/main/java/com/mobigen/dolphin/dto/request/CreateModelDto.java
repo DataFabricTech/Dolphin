@@ -46,8 +46,10 @@ public class CreateModelDto {
         @Schema(description = "DataModel name")
         private String model;
         // CONNECTOR
-        @Schema(description = "Id of OpenMetadata DBService")
+        @Schema(description = "Id of OpenMetadata DBService.\n*connectorId* is a high priority.")
         private UUID connectorId;
+        @Schema(description = "Fully Qualified Name of OpenMetadata DBService.\nIf *connectorId* is not set, use FQN.")
+        private String connectorFQN;
         @Schema(description = "Database name")
         private String database;
         @Schema(description = "Schema name")

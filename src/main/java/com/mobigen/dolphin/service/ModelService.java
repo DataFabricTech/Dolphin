@@ -134,8 +134,14 @@ public class ModelService {
         String sql = "create view " + trinoModel;
 
         if (createModelDto.getBaseModel().getType() == ModelType.CONNECTOR) {
-            var connInfo = openMetadataRepository.getConnectorInfo(createModelDto.getBaseModel().getConnectorId(),
-                    EntityType.DATABASE_SERVICE);
+            OMDBServiceEntity connInfo;
+            if (createModelDto.getBaseModel().getConnectorId() != null) {
+                connInfo = openMetadataRepository.getConnectorInfo(createModelDto.getBaseModel().getConnectorId(),
+                        EntityType.DATABASE_SERVICE);
+            } else {
+                connInfo = openMetadataRepository.getConnectorInfo(createModelDto.getBaseModel().getConnectorFQN(),
+                        EntityType.DATABASE_SERVICE);
+            }
             System.out.println(connInfo);
             var catalogName = getOrCreateTrinoCatalog(connInfo);
             sql = sql + " as select " + selectedColumns
