@@ -3,6 +3,8 @@ package com.mobigen.dolphin.dto.request;
 import com.mobigen.dolphin.util.JoinType;
 import com.mobigen.dolphin.util.ModelType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,9 +23,12 @@ import java.util.UUID;
 @Setter
 public class CreateModelDto {
     @Schema(description = "DataModel name to create", example = "model_test_1")
+    @NotNull(message = "modelName is required value.")
     private String modelName;
 
+    @Valid
     @Schema(description = "Conditions of base DataModel")
+    @NotNull(message = "baseModel is required value.")
     private BaseModel baseModel;
     @Schema(description = "Conditions for join")
     private List<JoinModel> joins;
@@ -32,6 +37,7 @@ public class CreateModelDto {
     @Setter
     public static class BaseModel {
         @Schema(description = "Type of base DataModel (MODEL, QUERY, CONNECTOR)")
+        @NotNull(message = "modelType of baseModel is required value.")
         private ModelType type;
         // QUERY
         @Schema(description = "Sql select query using DataModel", example = "select * from model_test_1")

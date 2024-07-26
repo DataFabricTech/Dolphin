@@ -46,7 +46,7 @@ public class ApiController {
 
     @Operation(summary = "Create dataModel", description = "Create a dataModel by method (MODEL, QUERY, CONNECTOR)")
     @PostMapping("/model")
-    public ModelDto addModel(@RequestBody CreateModelDto createModelDto) {
+    public ModelDto addModel(@RequestBody @Valid CreateModelDto createModelDto) {
         return modelService.createModel(createModelDto);
     }
 
