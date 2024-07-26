@@ -52,10 +52,6 @@ public class JobEntity {
     @Column(name = "result_path")
     private String resultPath;
 
-    @ManyToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "worker_id", referencedColumnName = "id")
-    private WorkerEntity worker;
-
     public enum JobStatus {
         INIT,
         QUEUED,
