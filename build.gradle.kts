@@ -47,7 +47,7 @@ dependencies {
     implementation("io.trino:trino-jdbc:450")
     compileOnly("io.trino:trino-spi:450")
     implementation("io.opentelemetry.semconv:opentelemetry-semconv:1.25.0-alpha")
-    implementation("io.opentelemetry:opentelemetry-api:1.38.0")
+    implementation("io.opentelemetry:opentelemetry-api:1.40.0")
 
     // - open metadata
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -55,7 +55,14 @@ dependencies {
 //    implementation("org.open-metadata:openmetadata-service:1.4.1")
 
     // jaeger
-    implementation("io.opentracing.contrib:opentracing-spring-jaeger-web-starter:3.1.2")
+//    implementation("io.opentracing.contrib:opentracing-spring-jaeger-web-starter:3.3.1")
+    implementation("org.springframework.cloud:spring-cloud-starter-sleuth:3.1.11"){
+        exclude(group = "org.springframework.cloud", module = "spring-cloud-sleuth-brave")
+    }
+    implementation("org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:1.1.4")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.39.0")
+    implementation("io.micrometer:micrometer-tracing-bridge-otel:1.3.2")
+//    implementation("io.opentelemetry:opentelemetry-exporter-jaeger:1.39.0")
 
     // json?
     implementation("com.googlecode.json-simple:json-simple:1.1.1")

@@ -1,9 +1,12 @@
 package com.mobigen.dolphin.config;
 
+import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Map;
@@ -70,5 +73,8 @@ public class DolphinConfiguration {
         private String uri;
         private Map<String, String> options;
     }
-
+    @Bean
+    public OtlpGrpcSpanExporter otlpHttpSpanExporter(@Value("${tracing.url}") String url) {
+        return OtlpGrpcSpanExporter.builder().setEndpoint(url).build();
+    }
 }
