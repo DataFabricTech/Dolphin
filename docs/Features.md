@@ -69,3 +69,4 @@
 - 임시 저장
   - nonblocking 쿼리 수행시 csv 외 포멧 지원
   - nonblocking 쿼리 수행시 minio 에 저장 지원
+- FullyQualifiedName / FQN 을 코드에서 혼용 중 정리가 필요
