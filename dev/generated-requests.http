@@ -56,12 +56,12 @@ Content-Type: application/json
   "id": "caaf9e59-8e9c-4531-9a72-7d070ef0b5b5",
   "eventType": "entityCreated",
   "entityType": "databaseService",
-  "entityId": "206e4a34-3fb3-4995-817b-9503ac3aecc1",
+  "entityId": "8d30dd9d-bdde-4b9a-b4e0-b790501df0d8",
   "previousVersion": 0.1,
   "currentVersion": 0.1,
   "userName": "admin",
   "timestamp": 1717482789023,
-  "entity": "{\"id\":\"206e4a34-3fb3-4995-817b-9503ac3aecc1\",\"name\":\"\ud3ec\uc2a4\ud2b8\uadf8\ub798\uc2a4 \ud14c\uc2a4\ud2b8\",\"fullyQualifiedName\":\"\ud3ec\uc2a4\ud2b8\uadf8\ub798\uc2a4 \ud14c\uc2a4\ud2b8\",\"serviceType\":\"Postgres\",\"description\":\"\",\"connection\":{},\"version\":0.1,\"updatedAt\":1717482789023,\"updatedBy\":\"admin\",\"owner\":{\"id\":\"a58ea22d-109f-4a19-8146-4af0feb1be33\",\"type\":\"user\",\"name\":\"admin\",\"fullyQualifiedName\":\"admin\",\"deleted\":false,\"href\":\"http://192.168.106.104:8585/api/v1/users/a58ea22d-109f-4a19-8146-4af0feb1be33\"},\"href\":\"http://192.168.106.104:8585/api/v1/services/databaseServices/206e4a34-3fb3-4995-817b-9503ac3aecc1\",\"deleted\":false}"
+  "entity": "{\"id\":\"8d30dd9d-bdde-4b9a-b4e0-b790501df0d8\",\"name\":\"fwani-maria\",\"fullyQualifiedName\":\"fwani-maria\",\"serviceType\":\"MariaDB\",\"description\":\"\",\"connection\":{},\"version\":0.1,\"updatedAt\":1717482789023,\"updatedBy\":\"admin\",\"owner\":{\"id\":\"a58ea22d-109f-4a19-8146-4af0feb1be33\",\"type\":\"user\",\"name\":\"admin\",\"fullyQualifiedName\":\"admin\",\"deleted\":false,\"href\":\"http://192.168.106.104:8585/api/v1/users/a58ea22d-109f-4a19-8146-4af0feb1be33\"},\"href\":\"http://192.168.106.104:8585/api/v1/services/databaseServices/206e4a34-3fb3-4995-817b-9503ac3aecc1\",\"deleted\":false}"
 }
 
 
@@ -79,4 +79,27 @@ Content-Type: application/json
   "userName": "admin",
   "timestamp": 1718171118698,
   "entity": "{\"id\":\"e2490763-d740-421b-b6f2-0f80c83011d8\",\"name\":\"s3-test-trino\",\"fullyQualifiedName\":\"s3-test-trino\",\"serviceType\":\"S3\",\"description\":\"\",\"connection\":{},\"version\":0.1,\"updatedAt\":1718171118698,\"updatedBy\":\"admin\",\"href\":\"http://192.168.106.104:8585/api/v1/services/storageServices/e2490763-d740-421b-b6f2-0f80c83011d8\",\"owner\":{\"id\":\"a58ea22d-109f-4a19-8146-4af0feb1be33\",\"type\":\"user\",\"name\":\"admin\",\"fullyQualifiedName\":\"admin\",\"deleted\":false,\"href\":\"http://192.168.106.104:8585/api/v1/users/a58ea22d-109f-4a19-8146-4af0feb1be33\"},\"deleted\":false}"
+}
+
+###
+{
+  "query": "select count(*) from dm_acc_info join dm_acc_main_code on dm_acc_info.acc_type = dm_acc_main_code.acc_type",
+  "referenceModels": [
+    {
+      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dt_dataset",
+      "name": "dt_dataset"
+    },
+    {
+      "fullyQualifiedName": "Fabric-Sample.datafabric.public.spatial_ref_sys",
+      "name": "spatial_ref_sys"
+    },
+    {
+      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_info",
+      "name": "dm_acc_info"
+    },
+    {
+      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_main_code",
+      "name": "dm_acc_main_code"
+    }
+  ]
 }

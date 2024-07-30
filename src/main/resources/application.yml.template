@@ -42,6 +42,8 @@ dolphin:
         tcp-keep-alive: false
         path-style-access: true
 spring:
+  application:
+    name: Dolphin
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -61,3 +63,10 @@ springdoc:
     path: /api-docs
   swagger-ui:
     path: /dolphin/docs
+otel:
+  traces:
+    exporter: jaeger
+  exporter:
+    otlp:
+      endpoint: http://{JAEGER_HOST:0.0.0.0}:{JAEGER_GRPC_PORT:4317}
+      protocol: grpc

@@ -3,9 +3,8 @@ plugins {
     id("com.mobigen.java-library")
     id("com.mobigen.java-application")
     id("org.springframework.boot") version "3.3.0"
+    id("io.spring.dependency-management") version "1.1.0"
 }
-
-apply(plugin = "io.spring.dependency-management")
 
 allprojects {
     group = "${group}.dolphin"
@@ -18,6 +17,12 @@ repositories {
 
 configurations.forEach {
     it.exclude("org.springframework.boot", "spring-boot-starter-logging")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.6.0")
+    }
 }
 
 dependencies {
@@ -55,14 +60,10 @@ dependencies {
 //    implementation("org.open-metadata:openmetadata-service:1.4.1")
 
     // jaeger
-//    implementation("io.opentracing.contrib:opentracing-spring-jaeger-web-starter:3.3.1")
-    implementation("org.springframework.cloud:spring-cloud-starter-sleuth:3.1.11"){
-        exclude(group = "org.springframework.cloud", module = "spring-cloud-sleuth-brave")
-    }
-    implementation("org.springframework.cloud:spring-cloud-sleuth-otel-autoconfigure:1.1.4")
-    implementation("io.opentelemetry:opentelemetry-exporter-otlp:1.39.0")
-    implementation("io.micrometer:micrometer-tracing-bridge-otel:1.3.2")
-//    implementation("io.opentelemetry:opentelemetry-exporter-jaeger:1.39.0")
+    // https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/getting-started/
+    implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
+    implementation("io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1")
+    implementation("io.opentelemetry:opentelemetry-exporter-auto:1.34.1")
 
     // json?
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
