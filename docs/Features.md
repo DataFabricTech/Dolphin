@@ -40,6 +40,8 @@
     - Model 타입은 OpenMetadata 에서 자동으로 등록 해줌 (같은 Trino 라서 가능)
 - 배포
   - Dockerfile 추가
+- Jaeger
+  - 시스템간 상태/성능 모니터링을 위함
 
 ## Bugs
 
@@ -52,8 +54,6 @@
     - 예) 몇 번(임계값) 조회 후 삭제, 시간 지나면 삭제 등..
 - Cache
   - 동일 쿼리 수행시 작업물을 빠르게 반환 하기 위한 것
-- Jaeger
-  - 시스템간 상태/성능 모니터링을 위함
 - 파일 조회/융합
   - trino 를 이용하여 1개의 쿼리로 여러 minio 데이터를 조회/융합 하는 방법
   - [trino-storage](https://github.com/snowlift/trino-storage) plugin 프로젝트 이용

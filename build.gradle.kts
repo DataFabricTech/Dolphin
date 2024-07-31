@@ -61,9 +61,10 @@ dependencies {
 
     // jaeger
     // https://opentelemetry.io/docs/zero-code/java/spring-boot-starter/getting-started/
+    // https://www.jaegertracing.io/docs/1.59/deployment/
+    // https://opentelemetry.io/docs/languages/sdk-configuration/general/
     implementation("io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter")
     implementation("io.opentelemetry:opentelemetry-exporter-jaeger:1.34.1")
-    implementation("io.opentelemetry:opentelemetry-exporter-auto:1.34.1")
 
     // json?
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
