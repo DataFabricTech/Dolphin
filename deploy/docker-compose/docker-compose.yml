@@ -15,7 +15,7 @@ services:
   postgres:
     image: ${POSTGRES_IMAGE}
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -35,7 +35,7 @@ services:
   trino:
     image: ${TRINO_IMAGE}
     ports:
-      - 9888:8080
+      - '9888:8080'
     volumes:
       - ./trino/config.properties:/etc/trino/config.properties
     networks:
@@ -70,10 +70,21 @@ services:
       - hive-metastore
     depends_on:
       - postgres
+  jaeger:
+    image: ${JAEGER_IMAGE}
+    ports:
+      - '4317:4317'
+      - '4318:4318'
+      - '16686:16686'
+    environment:
+      COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
+      COLLECTOR_OTLP_ENABLED: true
+    networks:
+      - jaeger
   dolphin:
     image: ${DOLPHIN_IMAGE}
     ports:
-      - "8080:8080"
+      - '8080:8080'
     entrypoint: java -jar -Dspring.config.location=$${CONFIG_FILE} /app/dolphin.jar
     environment:
       CONFIG_FILE: /app/application.yml
@@ -94,6 +105,8 @@ services:
       INGESTION_ID_PROFILER: 3ae11911-744e-41e6-9085-6f97397b058a
       HIVE_METASTORE_HOST: hive-metastore
       HIVE_METASTORE_PORT: 9083
+      JAEGER_HOST: jaeger
+      JAEGER_GRPC_PORT: 4317
     healthcheck:
       test: ["CMD-SHELL", "echo 1"]
     deploy:
@@ -103,9 +116,11 @@ services:
     depends_on:
       - postgres
       - trino
+      - jaeger
     networks:
       - db
       - trino
+      - jaeger
 volumes:
   dbdata:
     driver: local
@@ -113,3 +128,4 @@ networks:
   db:
   trino:
   hive-metastore:
+  jaeger:
