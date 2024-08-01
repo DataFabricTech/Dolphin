@@ -70,3 +70,7 @@ otel:
     otlp:
       endpoint: http://${JAEGER_HOST:0.0.0.0}:${JAEGER_GRPC_PORT:4317}
       protocol: grpc
+  metrics:
+    exporter: none
+  logs:
+    exporter: none
