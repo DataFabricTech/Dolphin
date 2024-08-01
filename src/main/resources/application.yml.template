@@ -68,5 +68,5 @@ otel:
     exporter: jaeger
   exporter:
     otlp:
-      endpoint: http://{JAEGER_HOST:0.0.0.0}:{JAEGER_GRPC_PORT:4317}
+      endpoint: http://${JAEGER_HOST:0.0.0.0}:${JAEGER_GRPC_PORT:4317}
       protocol: grpc
