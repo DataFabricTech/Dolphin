@@ -73,8 +73,7 @@ services:
   jaeger:
     image: ${JAEGER_IMAGE}
     ports:
-      - '4317:4317'
-      - '4318:4318'
+      - '14250:14250'
       - '16686:16686'
     environment:
       COLLECTOR_ZIPKIN_HOST_PORT: ":9411"
@@ -106,7 +105,7 @@ services:
       HIVE_METASTORE_HOST: hive-metastore
       HIVE_METASTORE_PORT: 9083
       JAEGER_HOST: jaeger
-      JAEGER_GRPC_PORT: 4317
+      JAEGER_PORT: 14250
     healthcheck:
       test: ["CMD-SHELL", "echo 1"]
     deploy:
