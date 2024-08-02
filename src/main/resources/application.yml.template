@@ -67,9 +67,8 @@ otel:
   traces:
     exporter: jaeger
   exporter:
-    otlp:
-      endpoint: http://${JAEGER_HOST:0.0.0.0}:${JAEGER_GRPC_PORT:4317}
-      protocol: grpc
+    jaeger:
+      endpoint: http://${JAEGER_HOST:0.0.0.0}:${JAEGER_PORT:14250}
   metrics:
     exporter: none
   logs:
