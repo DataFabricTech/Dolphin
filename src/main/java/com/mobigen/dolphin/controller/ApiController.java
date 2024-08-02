@@ -44,7 +44,17 @@ public class ApiController {
         return modelService.getModels();
     }
 
-    @Operation(summary = "Create dataModel", description = "Create a dataModel by method (MODEL, QUERY, CONNECTOR)")
+    @Operation(summary = "Create dataModel", description = """
+            Create a dataModel by method (MODEL, QUERY, CONNECTOR)
+            <br>
+            type 의 종류와 사용 옵션들 (* 은 필수 값)<br>
+            <pre>  MODEL - *model, selectedColumnNames
+              QUERY - *query, referenceModels
+              CONNECTOR - *(connectorID or connectorFQN), *database, *schema, *table
+            example)
+              type = query, query = "select * from model1", referenceModels = [{name = "model1", fullyQualifiedName = "a.b.c.model1"},]
+            </pre>"""
+    )
     @PostMapping("/model")
     public ModelDto addModel(@RequestBody @Valid CreateModelDto createModelDto) {
         return modelService.createModel(createModelDto);
