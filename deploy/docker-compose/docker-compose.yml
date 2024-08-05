@@ -65,6 +65,9 @@ services:
         -Djavax.jdo.option.ConnectionPassword=${DB_PASSWORD}"
     volumes:
       - ./libs/postgresql-42.7.3.jar:/opt/hive/lib/postgresql-42.7.3.jar
+      - ./libs/aws-java-sdk-core-1.12.767.jar:/opt/hive/lib/aws-java-sdk-core-1.12.767.jar
+      - ./libs/aws-java-sdk-s3-1.12.767.jar:/opt/hive/lib/aws-java-sdk-s3-1.12.767.jar
+      - ./libs/hadoop-aws-3.3.6.jar:/opt/hive/lib/hadoop-aws-3.3.6.jar
     networks:
       - db
       - hive-metastore
