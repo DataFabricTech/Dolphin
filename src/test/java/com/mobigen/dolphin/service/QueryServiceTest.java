@@ -220,6 +220,11 @@ class QueryServiceTest {
                 .totalRows(7)
                 .totalPages(4)
                 .build();
+
+        // 쿼리 시간은 동작 테스트와 상관 없으므로 맞춰준다.
+        expected.setStartedTime(result.getStartedTime());
+        expected.setFinishedTime(result.getFinishedTime());
+        expected.setElapsedTime(result.getElapsedTime());
         assertEquals(expected, result);
     }
 }
