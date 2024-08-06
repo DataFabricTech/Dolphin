@@ -4,6 +4,10 @@ import com.mobigen.dolphin.util.DolphinType;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,6 +28,31 @@ public class QueryResultDto {
     private int totalPages;
     private int page;
     private int size;
+    private ZonedDateTime startedTime;
+    private ZonedDateTime finishedTime;
+    private Double elapsedTime;
+
+    public QueryResultDto(UUID jobId, List<Column> columns, ResultData resultData, long totalRows, int totalPages, int page, int size, ZonedDateTime startedTime, ZonedDateTime finishedTime, Double elapsedTime) {
+        this.jobId = jobId;
+        this.columns = columns;
+        this.resultData = resultData;
+        this.totalRows = totalRows;
+        this.totalPages = totalPages;
+        this.page = page;
+        this.size = size;
+        if (startedTime == null) {
+            startedTime = ZonedDateTime.now(ZoneId.systemDefault());
+        }
+        this.startedTime = startedTime;
+        if (finishedTime == null) {
+            finishedTime = ZonedDateTime.now(ZoneId.systemDefault());
+        }
+        this.finishedTime = finishedTime;
+        if (elapsedTime == null) {
+            elapsedTime = Duration.between(startedTime, finishedTime).toNanos() / 1000000.0;
+        }
+        this.elapsedTime = elapsedTime;
+    }
 
     @Data
     @Builder
@@ -49,6 +78,16 @@ public class QueryResultDto {
         public QueryResultDtoBuilder resultData(ResultData resultData) {
             this.resultData = resultData;
             this.size = resultData.rows.size();
+            return this;
+        }
+
+        public QueryResultDtoBuilder startedTime(LocalDateTime startedTime) {
+            this.startedTime = ZonedDateTime.of(startedTime, ZoneId.systemDefault());
+            return this;
+        }
+
+        public QueryResultDtoBuilder finishedTime(LocalDateTime finishedTime) {
+            this.finishedTime = ZonedDateTime.of(finishedTime, ZoneId.systemDefault());
             return this;
         }
     }

@@ -14,6 +14,8 @@ import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -84,6 +86,7 @@ public class TrinoRepository {
         List<QueryResultDto.Column> columns = new ArrayList<>();
         List<String> columnNames = new ArrayList<>();
         try {
+            var startTime = LocalDateTime.now();
             var rows = trinoJdbcTemplate.query(sql, ((rs, rowNum) -> {
                 var rsmd = rs.getMetaData();
                 int numberOfColumns = rsmd.getColumnCount();
@@ -103,7 +106,8 @@ public class TrinoRepository {
                 }
                 return row;
             }));
-            log.info("End of executing {}", sql);
+            var endTime = LocalDateTime.now();
+            log.info("End of executing {}, elapsed(ms): {}", sql, Duration.between(startTime, endTime));
             return QueryResultDto.builder()
                     .columns(columns)
                     .resultData(QueryResultDto.ResultData.builder()
@@ -113,6 +117,8 @@ public class TrinoRepository {
                     .totalRows(totalRows)
                     .totalPages(totalPages)
                     .page(page)
+                    .startedTime(startTime)
+                    .finishedTime(endTime)
                     .build();
         } catch (UncategorizedSQLException e) {
             log.error(e.getMessage(), e);
