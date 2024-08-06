@@ -1,6 +1,7 @@
 package com.mobigen.dolphin.dto.response;
 
 import com.mobigen.dolphin.util.DolphinType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 
@@ -28,8 +29,11 @@ public class QueryResultDto {
     private int totalPages;
     private int page;
     private int size;
+    @Schema(description = "query executing time")
     private ZonedDateTime startedTime;
+    @Schema(description = "query finishing time")
     private ZonedDateTime finishedTime;
+    @Schema(description = "milli-seconds")
     private Double elapsedTime;
 
     public QueryResultDto(UUID jobId, List<Column> columns, ResultData resultData, long totalRows, int totalPages, int page, int size, ZonedDateTime startedTime, ZonedDateTime finishedTime, Double elapsedTime) {
