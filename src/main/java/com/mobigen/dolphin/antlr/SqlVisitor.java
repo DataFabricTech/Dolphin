@@ -306,43 +306,38 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
                 return modelCache.get(modelName);
             }
             tableInfo = getOpenMetadataTableEntityFromReferenceModel(modelName);
-            if (tableInfo == null) {
-                // reference 모델이 없는 경우 hive 모델로 인식 하고 수행
-                // web 페이지를 통해 들어올 경우 무조건 reference 모델이 올것이므로, 테스트 용도임.
-                catalogName = dolphinConfiguration.getModel().getCatalog();
-                schemaName = dolphinConfiguration.getModel().getSchema().getDb();
-                log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
-                fullTrinoModelName = catalogName + "." + schemaName + "." + modelName;
-                tableInfo = openMetadataRepository.getTable(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + fullTrinoModelName);
-            } else {
-                if (tableInfo.getService().getName().equals(dolphinConfiguration.getModel().getOmTrinoDatabaseService())
-                        && tableInfo.getDatabase().getName().equals(dolphinConfiguration.getModel().getCatalog())) {
-                    catalogName = dolphinConfiguration.getModel().getCatalog();
-                    schemaName = dolphinConfiguration.getModel().getSchema().getDb();
-                } else {
-                    catalogName = Functions.getCatalogName(tableInfo.getService().getId());
-                    if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
-                        schemaName = tableInfo.getDatabaseSchema().getName();
-                    } else {
-                        schemaName = tableInfo.getDatabase().getName();
-                    }
-                }
-            }
         } else {
             // fqn 입력
+            // keyword 가 포함된 fqn 을 사용할 때, backtick(내부에서 double-quote 로 변함) 을 사용하게 되는데,
+            // fqn 을 이용해 조회 하기 위해 double-quote 를 제거
             var fqn = ctx.children.stream().map(x -> x.accept(this))
-                    .collect(Collectors.joining());
+                    .collect(Collectors.joining())
+                    .replace("\"", "");
             if (modelCache.containsKey(fqn)) {
                 return modelCache.get(fqn);
             }
             tableInfo = openMetadataRepository.getTable(fqn);
-            catalogName = Functions.getCatalogName(tableInfo.getService().getId());
-            if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
-                schemaName = tableInfo.getDatabaseSchema().getName();
-            } else {
-                schemaName = tableInfo.getDatabase().getName();
-            }
             modelName = tableInfo.getName();
+        }
+        if (tableInfo == null) {
+            catalogName = dolphinConfiguration.getModel().getCatalog();
+            schemaName = dolphinConfiguration.getModel().getSchema().getDb();
+            log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
+            fullTrinoModelName = catalogName + "." + schemaName + "." + modelName;
+            tableInfo = openMetadataRepository.getTable(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + fullTrinoModelName);
+        } else {
+            if (tableInfo.getService().getName().equals(dolphinConfiguration.getModel().getOmTrinoDatabaseService())
+                    && tableInfo.getDatabase().getName().equals(dolphinConfiguration.getModel().getCatalog())) {
+                catalogName = dolphinConfiguration.getModel().getCatalog();
+                schemaName = dolphinConfiguration.getModel().getSchema().getDb();
+            } else {
+                catalogName = Functions.getCatalogName(tableInfo.getService().getId());
+                if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
+                    schemaName = tableInfo.getDatabaseSchema().getName();
+                } else {
+                    schemaName = tableInfo.getDatabase().getName();
+                }
+            }
         }
         log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
         fullTrinoModelName = catalogName + "." + schemaName + "." + tableInfo.getName();
