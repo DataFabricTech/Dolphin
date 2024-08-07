@@ -168,7 +168,9 @@ public class OpenMetadataRepository {
                 .retrieve()
                 .bodyToMono(OMTableEntity.class)
                 .block();
-        log.info(Objects.requireNonNull(response).toString());
+        log.info("tableName: {}, fqn: {}",
+                Objects.requireNonNull(response).getName(),
+                Objects.requireNonNull(response).getFullyQualifiedName());
         return response;
     }
 
@@ -186,7 +188,9 @@ public class OpenMetadataRepository {
                 .bodyToMono(outputClazz)
                 .retry(0)
                 .block();
-        log.info(Objects.requireNonNull(response).toString());
+        log.info("tableName: {}, fqn: {}",
+                Objects.requireNonNull(response).getName(),
+                Objects.requireNonNull(response).getFullyQualifiedName());
         return response;
     }
 

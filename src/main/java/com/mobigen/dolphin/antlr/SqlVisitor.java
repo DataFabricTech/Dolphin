@@ -4,6 +4,7 @@ import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.entity.local.FusionModelEntity;
 import com.mobigen.dolphin.entity.local.JobEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.mobigen.dolphin.util.Functions.convertKeywordName;
@@ -261,55 +263,97 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         return result;
     }
 
+    private OMTableEntity getOpenMetadataTableEntityFromReferenceModel(String modelName) {
+        // reference 모델 체크
+        var token = "[a-zA-Z_ㄱ-ㅎ가-힣][a-zA-Z_ㄱ-ㅎ가-힣0-9]*";
+        var pattern = Pattern.compile(token + "\\." + token + "\\." + token + "\\." + token);
+        if (pattern.matcher(modelName).matches()) {
+            return openMetadataRepository.getTable(modelName);
+        }
+        var i = 0;
+        ExecuteDto.ReferenceModel matched = null;
+        for (var referenceModel : referenceModels) {
+            if (modelName.equalsIgnoreCase(referenceModel.getName())) {
+                matched = referenceModel;
+                i++;
+            }
+        }
+        if (i > 1) {
+            throw new SqlParseException(ErrorCode.INVALID_SQL, "ERROR: error rule : " + modelName);
+        }
+        if (matched == null) {
+            return null;
+        }
+        return matched.getFullyQualifiedName() != null ?
+                openMetadataRepository.getTable(matched.getFullyQualifiedName()) :
+                openMetadataRepository.getTable(matched.getId());
+    }
+
     @Override
     public String visitModel_term(ModelSqlParser.Model_termContext ctx) {
-        if (ctx.schema_name() != null && ctx.catalog_name() == null) {
-            throw new SqlParseException(ErrorCode.INVALID_SQL, "schema 를 사용한 경우 catalog 를 반드시 설정 해야 합니다.");
-        } else if (ctx.schema_name() == null && ctx.catalog_name() == null) {
-            // catalog 와 schema 를 지정 하지 않은 경우, OpenMetadata 에서 참조 되는 모델이 있는지 체크
-            var key = ctx.model_name().getText().toLowerCase();
-            if (modelCache.containsKey(key)) {  // 먼저 OpenMetadata 에 접근된 모델인 경우 바로 리턴
-                return modelCache.get(key);
+        String catalogName;
+        String schemaName;
+        String modelName;
+        String fullTrinoModelName;
+        OMTableEntity tableInfo;
+        if (ctx.children.size() == 1) {
+            // 모델 명만 입력
+            modelName = visitAny_name(ctx.any_name(0));
+            if (modelName.startsWith("\"") && modelName.endsWith("\"")) {
+                modelName = modelName.substring(1, modelName.length() - 1);
             }
-            for (var referenceModel : referenceModels) {
-                if (key.equalsIgnoreCase(referenceModel.getName())) {
-                    var tableInfo = referenceModel.getId() == null ?
-                            openMetadataRepository.getTable(referenceModel.getFullyQualifiedName()) :
-                            openMetadataRepository.getTable(referenceModel.getId());
-                    var catalogName = Functions.getCatalogName(tableInfo.getService().getId());
-                    String schemaName;
-                    if ("postgres" .equalsIgnoreCase(tableInfo.getServiceType())) {
+            if (modelCache.containsKey(modelName)) {
+                return modelCache.get(modelName);
+            }
+            tableInfo = getOpenMetadataTableEntityFromReferenceModel(modelName);
+            if (tableInfo == null) {
+                // reference 모델이 없는 경우 hive 모델로 인식 하고 수행
+                // web 페이지를 통해 들어올 경우 무조건 reference 모델이 올것이므로, 테스트 용도임.
+                catalogName = dolphinConfiguration.getModel().getCatalog();
+                schemaName = dolphinConfiguration.getModel().getSchema().getDb();
+                log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
+                fullTrinoModelName = catalogName + "." + schemaName + "." + modelName;
+                tableInfo = openMetadataRepository.getTable(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + fullTrinoModelName);
+            } else {
+                if (tableInfo.getService().getName().equals(dolphinConfiguration.getModel().getOmTrinoDatabaseService())
+                        && tableInfo.getDatabase().getName().equals(dolphinConfiguration.getModel().getCatalog())) {
+                    catalogName = dolphinConfiguration.getModel().getCatalog();
+                    schemaName = dolphinConfiguration.getModel().getSchema().getDb();
+                } else {
+                    catalogName = Functions.getCatalogName(tableInfo.getService().getId());
+                    if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
                         schemaName = tableInfo.getDatabaseSchema().getName();
                     } else {
                         schemaName = tableInfo.getDatabase().getName();
                     }
-                    var model = catalogName + "." + schemaName + "." + tableInfo.getName();
-                    modelCache.put(key, model);
-                    usedModelHistory.add(FusionModelEntity.builder()
-                            .job(job)
-                            .modelIdOfOM(tableInfo.getId())
-                            .fullyQualifiedName(tableInfo.getFullyQualifiedName())
-                            .trinoModelName(model)
-                            .build());
-                    return model;
                 }
             }
+        } else {
+            // fqn 입력
+            var fqn = ctx.children.stream().map(x -> x.accept(this))
+                    .collect(Collectors.joining());
+            if (modelCache.containsKey(fqn)) {
+                return modelCache.get(fqn);
+            }
+            tableInfo = openMetadataRepository.getTable(fqn);
+            catalogName = Functions.getCatalogName(tableInfo.getService().getId());
+            if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
+                schemaName = tableInfo.getDatabaseSchema().getName();
+            } else {
+                schemaName = tableInfo.getDatabase().getName();
+            }
+            modelName = tableInfo.getName();
         }
-
-        // OpenMetadata 에서 참조 되지 않은 경우, 사용자가 작성한 대로 인식
-        var catalogName = visitCatalog_name(ctx.catalog_name());
-        var schemaName = visitSchema_name(ctx.schema_name());
-        var modelName = convertKeywordName(ctx.model_name().getText());
         log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
-        var model = catalogName + "." + schemaName + "." + modelName;
-        var tableInfo = openMetadataRepository.getTable(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + model);
+        fullTrinoModelName = catalogName + "." + schemaName + "." + tableInfo.getName();
+        modelCache.put(modelName, fullTrinoModelName);
         usedModelHistory.add(FusionModelEntity.builder()
                 .job(job)
                 .modelIdOfOM(tableInfo.getId())
                 .fullyQualifiedName(tableInfo.getFullyQualifiedName())
-                .trinoModelName(model)
+                .trinoModelName(fullTrinoModelName)
                 .build());
-        return model;
+        return fullTrinoModelName;
     }
 
     @Override
@@ -333,27 +377,6 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
 
     @Override
     public String visitColumn_alias(ModelSqlParser.Column_aliasContext ctx) {
-        return visitAny_name(ctx.any_name());
-    }
-
-    @Override
-    public String visitCatalog_name(ModelSqlParser.Catalog_nameContext ctx) {
-        if (ctx == null) {
-            return dolphinConfiguration.getModel().getCatalog();
-        }
-        return visitAny_name(ctx.any_name());
-    }
-
-    @Override
-    public String visitSchema_name(ModelSqlParser.Schema_nameContext ctx) {
-        if (ctx == null) {
-            return dolphinConfiguration.getModel().getSchema().getDb();
-        }
-        return visitAny_name(ctx.any_name());
-    }
-
-    @Override
-    public String visitModel_name(ModelSqlParser.Model_nameContext ctx) {
         return visitAny_name(ctx.any_name());
     }
 

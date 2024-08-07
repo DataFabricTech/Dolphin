@@ -141,7 +141,8 @@ table_or_subquery
 ;
 
 model_term
-: ((catalog_name DOT)? schema_name DOT)? model_name
+: any_name DOT any_name DOT any_name DOT any_name
+| any_name
 ;
 
 column_term
@@ -321,10 +322,7 @@ collation_name: any_name;
 column_alias: any_name;
 column_name: any_name;
 function_name: any_name;
-catalog_name: any_name;
-schema_name: any_name;
 table_alias: any_name;
-model_name: any_name;
 
 any_name
 : IDENTIFIER
