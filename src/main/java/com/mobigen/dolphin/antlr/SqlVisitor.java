@@ -279,7 +279,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
             }
         }
         if (i > 1) {
-            throw new SqlParseException(ErrorCode.INVALID_SQL, "ERROR: error rule : " + modelName);
+            throw new SqlParseException(ErrorCode.INVALID_SQL, "ERROR: duplicated reference model : " + modelName);
         }
         if (matched == null) {
             return null;

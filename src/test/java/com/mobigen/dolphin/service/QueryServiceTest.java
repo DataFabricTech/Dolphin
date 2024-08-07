@@ -7,11 +7,13 @@ import com.mobigen.dolphin.entity.local.JobEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMBaseEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
+import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.DolphinType;
+import com.mobigen.dolphin.util.Pair;
 import com.mobigen.dolphin.util.TrinoInit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +26,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.*;
 
+import static com.mobigen.dolphin.util.Functions.getCatalogName;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -70,25 +74,13 @@ class QueryServiceTest {
         doReturn(List.of("ok")).when(trinoRepository).getCatalogs();
         doNothing().when(trinoRepository).execute(any());
         doReturn(QueryResultDto.builder().build()).when(trinoRepository).executeQuery(any(), any(), any(), any(), any());
-        var exampleTable = OMTableEntity.builder()
-                .name("result_data_1")
-                .service(OMBaseEntity.builder()
-                        .id(UUID.randomUUID())
-                        .build())
-                .serviceType("postgres")
-                .database(OMDBServiceEntity.builder()
-                        .name("public")
-                        .build())
-                .build();
-        doReturn(exampleTable).when(openMetadataRepository).getTable((UUID) any());
-        doReturn(exampleTable).when(openMetadataRepository).getTable(anyString());
-        doReturn(exampleTable).when(openMetadataRepository).getTable(anyString(), any());
         doAnswer(x -> {
             var schema = new DolphinConfiguration.ModelSchema();
             schema.setDb("default");
             var model = new DolphinConfiguration.Model();
             model.setCatalog("internalhive");
             model.setSchema(schema);
+            model.setOmTrinoDatabaseService("datamodels");
             return model;
         }).when(dolphinConfiguration).getModel();
         doReturn(null).when(fusionModelRepository).saveAll(any());
@@ -97,6 +89,21 @@ class QueryServiceTest {
 
     @Test
     public void testCreateJobQuery1() {
+        var exampleTable = OMTableEntity.builder()
+                .name("abc")
+                .service(OMBaseEntity.builder()
+                        .id(UUID.randomUUID())
+                        .build())
+                .serviceType("datamodels")
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build();
+        doReturn(exampleTable).when(openMetadataRepository).getTable(anyString());
+
         var input = new ExecuteDto();
         input.setQuery("select a.id a_id, a.name as a_name from abc a");
         var job = queryService.createJob(input);
@@ -111,6 +118,30 @@ class QueryServiceTest {
 
     @Test
     public void testCreateJobQuery2() {
+        doReturn(OMTableEntity.builder()
+                .name("abc")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+        doReturn(OMTableEntity.builder()
+                .name("bcd")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id a_id, a.name as a_name, b.long, b.short from abc a, bcd b on a.id = b.id");
         var job = queryService.createJob(input, true);
@@ -127,6 +158,30 @@ class QueryServiceTest {
 
     @Test
     public void testCreateJobQuery3() {
+        doReturn(OMTableEntity.builder()
+                .name("abc")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+        doReturn(OMTableEntity.builder()
+                .name("bcd")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
                 " union select b.id, b.name from bcd b limit 3,10");
@@ -145,17 +200,42 @@ class QueryServiceTest {
 
     @Test
     public void testCreateJobQuery4() {
+        var pair1 = new Pair<>(new Pair<>("abc", UUID.randomUUID()), List.of("a1", "b", "default", "abc"));
+        var pair2 = new Pair<>(new Pair<>("bcd", UUID.randomUUID()), List.of("a2", "c", "public", "bcd"));
+        for (var pair : List.of(pair1, pair2)) {
+            doReturn(OMTableEntity.builder()
+                    .name(pair.left().left())
+                    .service(OMBaseEntity.builder()
+                            .name(pair.right().get(0))
+                            .id(pair.left().right())
+                            .build())
+                    .database(OMDBServiceEntity.builder()
+                            .name(pair.right().get(1))
+                            .build())
+                    .databaseSchema(OMDBServiceEntity.builder()
+                            .name(pair.right().get(2))
+                            .build())
+                    .build()).when(openMetadataRepository).getTable(eq(String.join(".", pair.right())));
+        }
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
                 " union select b.id, b.name from bcd b limit 3,10");
+        var refModel1 = new ExecuteDto.ReferenceModel();
+        refModel1.setName(pair1.left().left());
+        refModel1.setFullyQualifiedName(String.join(".", pair1.right()));
+        var refModel2 = new ExecuteDto.ReferenceModel();
+        refModel2.setName(pair2.left().left());
+        refModel2.setFullyQualifiedName(String.join(".", pair2.right()));
+        input.setReferenceModels(List.of(refModel1, refModel2));
         var job = queryService.createJob(input, true);
         var expected = JobEntity.builder()
                 .status(JobEntity.JobStatus.QUEUED)
                 .userQuery(input.getQuery())
                 .convertedQuery("select a.id, a.name" +
-                        " from internalhive.default.abc as a" +
+                        " from " + getCatalogName(pair1.left().right()) + "." + pair1.right().get(1) + "." + pair1.right().get(3) + " as a" +
                         " union select b.id, b.name" +
-                        " from internalhive.default.bcd as b")
+                        " from " + getCatalogName(pair2.left().right()) + "." + pair2.right().get(1) + "." + pair2.right().get(3) + " as b"
+                )
                 .limit_(10)
                 .offset_(3)
                 .build();
@@ -163,7 +243,67 @@ class QueryServiceTest {
     }
 
     @Test
+    public void testDuplicatedModelNameOfReferenceModel() {
+        var pair1 = new Pair<>(new Pair<>("abc", UUID.randomUUID()), List.of("a1", "b", "default", "abc"));
+        var pair2 = new Pair<>(new Pair<>("bcd", UUID.randomUUID()), List.of("a2", "c", "public", "bcd"));
+        var pair3 = new Pair<>(new Pair<>("abc", UUID.randomUUID()), List.of("a2", "c", "public", "abc"));
+        var pairs = List.of(pair1, pair2, pair3);
+        for (var pair : pairs) {
+            doReturn(OMTableEntity.builder()
+                    .name(pair.left().left())
+                    .service(OMBaseEntity.builder()
+                            .name(pair.right().get(0))
+                            .id(pair.left().right())
+                            .build())
+                    .database(OMDBServiceEntity.builder()
+                            .name(pair.right().get(1))
+                            .build())
+                    .databaseSchema(OMDBServiceEntity.builder()
+                            .name(pair.right().get(2))
+                            .build())
+                    .build()).when(openMetadataRepository).getTable(eq(String.join(".", pair.right())));
+        }
+        var input = new ExecuteDto();
+        input.setQuery("select a.id, a.name from abc a" +
+                " union select b.id, b.name from bcd b limit 3,10");
+        List<ExecuteDto.ReferenceModel> referenceModels = new ArrayList<>();
+        for (var pair : pairs) {
+            var refModel = new ExecuteDto.ReferenceModel();
+            refModel.setName(pair.left().left());
+            refModel.setFullyQualifiedName(String.join(".", pair.right()));
+            referenceModels.add(refModel);
+        }
+        input.setReferenceModels(referenceModels);
+        assertThatThrownBy(() -> queryService.createJob(input, true))
+                .isInstanceOf(SqlParseException.class);
+    }
+
+    @Test
     public void testExecute() {
+        doReturn(OMTableEntity.builder()
+                .name("abc")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+        doReturn(OMTableEntity.builder()
+                .name("bcd")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
                 " union select b.id, b.name from bcd b limit 3,10");
@@ -174,6 +314,30 @@ class QueryServiceTest {
 
     @Test
     public void testExecuteAsync() {
+        doReturn(OMTableEntity.builder()
+                .name("abc")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+        doReturn(OMTableEntity.builder()
+                .name("bcd")
+                .service(OMBaseEntity.builder()
+                        .name("datamodels")
+                        .build())
+                .database(OMDBServiceEntity.builder()
+                        .name("internalhive")
+                        .build())
+                .databaseSchema(OMDBServiceEntity.builder()
+                        .name("default")
+                        .build())
+                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
                 " union select b.id, b.name from bcd b limit 3,10");
