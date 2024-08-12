@@ -2,6 +2,7 @@ package com.mobigen.dolphin.dto.response;
 
 import com.mobigen.dolphin.util.DolphinType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.Null;
 import lombok.Builder;
 import lombok.Data;
 
@@ -31,12 +32,16 @@ public class QueryResultDto {
     private int size;
     @Schema(description = "query executing time")
     private ZonedDateTime startedTime;
+    @Schema(description = "query executing time")
+    private Long startedUnixTimestamp;
     @Schema(description = "query finishing time")
     private ZonedDateTime finishedTime;
+    @Schema(description = "query finishing time")
+    private Long finishedUnixTimestamp;
     @Schema(description = "milli-seconds")
     private Double elapsedTime;
 
-    public QueryResultDto(UUID jobId, List<Column> columns, ResultData resultData, long totalRows, int totalPages, int page, int size, ZonedDateTime startedTime, ZonedDateTime finishedTime, Double elapsedTime) {
+    public QueryResultDto(UUID jobId, List<Column> columns, ResultData resultData, long totalRows, int totalPages, int page, int size, ZonedDateTime startedTime, Long startedUnixTimestamp, ZonedDateTime finishedTime, Long finishedUnixTimestamp, Double elapsedTime) {
         this.jobId = jobId;
         this.columns = columns;
         this.resultData = resultData;
@@ -48,10 +53,12 @@ public class QueryResultDto {
             startedTime = ZonedDateTime.now(ZoneId.systemDefault());
         }
         this.startedTime = startedTime;
+        this.startedUnixTimestamp = startedUnixTimestamp;
         if (finishedTime == null) {
             finishedTime = ZonedDateTime.now(ZoneId.systemDefault());
         }
         this.finishedTime = finishedTime;
+        this.finishedUnixTimestamp = finishedUnixTimestamp;
         if (elapsedTime == null) {
             elapsedTime = Duration.between(startedTime, finishedTime).toNanos() / 1000000.0;
         }
@@ -87,11 +94,13 @@ public class QueryResultDto {
 
         public QueryResultDtoBuilder startedTime(LocalDateTime startedTime) {
             this.startedTime = ZonedDateTime.of(startedTime, ZoneId.systemDefault());
+            this.startedUnixTimestamp = this.startedTime.toInstant().toEpochMilli();
             return this;
         }
 
         public QueryResultDtoBuilder finishedTime(LocalDateTime finishedTime) {
             this.finishedTime = ZonedDateTime.of(finishedTime, ZoneId.systemDefault());
+            this.finishedUnixTimestamp = this.finishedTime.toInstant().toEpochMilli();
             return this;
         }
     }
