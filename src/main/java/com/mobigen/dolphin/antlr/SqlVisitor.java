@@ -7,8 +7,8 @@ import com.mobigen.dolphin.entity.local.JobEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.exception.SqlParseException;
+import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
-import com.mobigen.dolphin.util.Functions;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +42,7 @@ import static com.mobigen.dolphin.util.Functions.convertKeywordName;
 public class SqlVisitor extends ModelSqlBaseVisitor<String> {
     private final JobEntity job;
     private final OpenMetadataRepository openMetadataRepository;
+    private final MixRepository mixRepository;
     private final DolphinConfiguration dolphinConfiguration;
     private final List<ExecuteDto.ReferenceModel> referenceModels;
 
@@ -268,7 +269,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
 
     private OMTableEntity getOpenMetadataTableEntityFromReferenceModel(String modelName) {
         // reference 모델 체크
-        var token = "[a-zA-Z_ㄱ-ㅎ가-힣][a-zA-Z_ㄱ-ㅎ가-힣0-9]*";
+        var token = ".*";
         var pattern = Pattern.compile(token + "\\." + token + "\\." + token + "\\." + token);
         if (pattern.matcher(modelName).matches()) {
             return openMetadataRepository.getTable(modelName);
@@ -334,7 +335,8 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
                 catalogName = dolphinConfiguration.getModel().getCatalog();
                 schemaName = dolphinConfiguration.getModel().getSchema().getDb();
             } else {
-                catalogName = Functions.getCatalogName(tableInfo.getService().getId());
+//                catalogName = Functions.getCatalogName(tableInfo.getService().getId());
+                catalogName = mixRepository.getOrCreateTrinoCatalog(tableInfo.getService());
                 if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
                     schemaName = tableInfo.getDatabaseSchema().getName();
                 } else {

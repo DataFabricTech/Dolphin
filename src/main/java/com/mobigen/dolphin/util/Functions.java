@@ -1,6 +1,10 @@
 package com.mobigen.dolphin.util;
 
+import com.mobigen.dolphin.antlr.ModelSqlLexer;
 import com.mobigen.dolphin.antlr.ModelSqlParser;
+import com.mobigen.dolphin.antlr.SqlVisitor;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.VocabularyImpl;
 
 import java.sql.Types;
@@ -57,5 +61,16 @@ public class Functions {
             case REAL -> Double.parseDouble(value);
             default -> value;
         };
+    }
+
+    public static ModelSqlParser.ParseContext getParseTree(String sql) {
+        var lexer = new ModelSqlLexer(CharStreams.fromString(sql));
+        var tokens = new CommonTokenStream(lexer);
+        var parser = new ModelSqlParser(tokens);
+        return parser.parse();
+    }
+
+    public static String getConvertedSql(SqlVisitor visitor, ModelSqlParser.ParseContext parseTree) {
+        return visitor.visit(parseTree);
     }
 }

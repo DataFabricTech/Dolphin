@@ -8,6 +8,7 @@ import com.mobigen.dolphin.entity.openmetadata.OMBaseEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.exception.SqlParseException;
+import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
@@ -48,6 +49,8 @@ class QueryServiceTest {
     private DolphinConfiguration dolphinConfiguration;
     @Mock
     private TrinoRepository trinoRepository;
+    @Mock
+    private MixRepository mixRepository;
     @Mock
     private OpenMetadataRepository openMetadataRepository;
     @Mock
@@ -203,12 +206,14 @@ class QueryServiceTest {
         var pair1 = new Pair<>(new Pair<>("abc", UUID.randomUUID()), List.of("a1", "b", "default", "abc"));
         var pair2 = new Pair<>(new Pair<>("bcd", UUID.randomUUID()), List.of("a2", "c", "public", "bcd"));
         for (var pair : List.of(pair1, pair2)) {
+            var service = OMBaseEntity.builder()
+                    .name(pair.right().get(0))
+                    .id(pair.left().right())
+                    .build();
+            doReturn(getCatalogName(pair.left().right())).when(mixRepository).getOrCreateTrinoCatalog(eq(service));
             doReturn(OMTableEntity.builder()
                     .name(pair.left().left())
-                    .service(OMBaseEntity.builder()
-                            .name(pair.right().get(0))
-                            .id(pair.left().right())
-                            .build())
+                    .service(service)
                     .database(OMDBServiceEntity.builder()
                             .name(pair.right().get(1))
                             .build())

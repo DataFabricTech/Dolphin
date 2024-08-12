@@ -1,7 +1,5 @@
 package com.mobigen.dolphin.service;
 
-import com.mobigen.dolphin.antlr.ModelSqlLexer;
-import com.mobigen.dolphin.antlr.ModelSqlParser;
 import com.mobigen.dolphin.antlr.SqlVisitor;
 import com.mobigen.dolphin.antlr.SqlWithoutLimitVisitor;
 import com.mobigen.dolphin.config.DolphinConfiguration;
@@ -9,6 +7,7 @@ import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.entity.local.JobEntity;
 import com.mobigen.dolphin.exception.SqlParseException;
+import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
@@ -16,11 +15,12 @@ import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.CsvDeSerializer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+
+import static com.mobigen.dolphin.util.Functions.getConvertedSql;
+import static com.mobigen.dolphin.util.Functions.getParseTree;
 
 /**
  * <p>
@@ -36,21 +36,12 @@ public class QueryService {
     private final OpenMetadataRepository openMetadataRepository;
     private final DolphinConfiguration dolphinConfiguration;
     private final TrinoRepository trinoRepository;
+    private final MixRepository mixRepository;
     private final JobRepository jobRepository;
     private final FusionModelRepository fusionModelRepository;
 
     private final AsyncService asyncService;
 
-    public ModelSqlParser.ParseContext getParseTree(String sql) {
-        var lexer = new ModelSqlLexer(CharStreams.fromString(sql));
-        var tokens = new CommonTokenStream(lexer);
-        var parser = new ModelSqlParser(tokens);
-        return parser.parse();
-    }
-
-    public String getConvertedSql(SqlVisitor visitor, ModelSqlParser.ParseContext parseTree) {
-        return visitor.visit(parseTree);
-    }
 
     public JobEntity createJob(ExecuteDto executeDto) {
         return createJob(executeDto, false);
@@ -70,10 +61,10 @@ public class QueryService {
         SqlVisitor visitor;
         if (separateLimitation) {
             log.info("Use limitation separator visitor");
-            visitor = new SqlWithoutLimitVisitor(job, openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
+            visitor = new SqlWithoutLimitVisitor(job, openMetadataRepository, mixRepository, dolphinConfiguration, executeDto.getReferenceModels());
         } else {
             log.info("Use origin visitor");
-            visitor = new SqlVisitor(job, openMetadataRepository, dolphinConfiguration, executeDto.getReferenceModels());
+            visitor = new SqlVisitor(job, openMetadataRepository, mixRepository, dolphinConfiguration, executeDto.getReferenceModels());
         }
         var convertedQuery = getConvertedSql(visitor, parseTree);
         log.info("Converted sql: {}, separate limitation: {}", convertedQuery, separateLimitation);

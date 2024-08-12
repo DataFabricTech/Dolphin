@@ -3,6 +3,7 @@ package com.mobigen.dolphin.antlr;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.entity.local.JobEntity;
+import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.util.Pair;
 import lombok.Getter;
@@ -27,8 +28,8 @@ import java.util.List;
 public class SqlWithoutLimitVisitor extends SqlVisitor {
     private Pair<Integer, Integer> pagination;
 
-    public SqlWithoutLimitVisitor(JobEntity job, OpenMetadataRepository openMetadataRepository, DolphinConfiguration dolphinConfiguration, List<ExecuteDto.ReferenceModel> referenceModels) {
-        super(job, openMetadataRepository, dolphinConfiguration, referenceModels);
+    public SqlWithoutLimitVisitor(JobEntity job, OpenMetadataRepository openMetadataRepository, MixRepository mixRepository, DolphinConfiguration dolphinConfiguration, List<ExecuteDto.ReferenceModel> referenceModels) {
+        super(job, openMetadataRepository, mixRepository, dolphinConfiguration, referenceModels);
     }
 
     @Override

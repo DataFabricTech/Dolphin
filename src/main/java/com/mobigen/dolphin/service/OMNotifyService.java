@@ -5,6 +5,7 @@ import com.mobigen.dolphin.dto.request.OMNotifyDto;
 import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.exception.SqlParseException;
+import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +22,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 @Service
 public class OMNotifyService {
-    private final ModelService modelService;
+    private final MixRepository mixRepository;
     private final OpenMetadataRepository openMetadataRepository;
 
     public String runDBService(OMNotifyDto omNotifyDto) throws JsonProcessingException {
@@ -29,11 +30,11 @@ public class OMNotifyService {
             log.info("Create catalog of {}", omNotifyDto.getEntityId());
             var connInfo = openMetadataRepository.getConnectorInfo(omNotifyDto.getEntityId(),
                     EntityType.DATABASE_SERVICE);
-            var catalog = modelService.getOrCreateTrinoCatalog(connInfo);
+            var catalog = mixRepository.getOrCreateTrinoCatalog(connInfo);
             return "Success to create catalog [" + catalog + "]";
         } else if (omNotifyDto.getEventType().equals(OMNotifyDto.EventType.ENTITY_DELETED)) {
             log.info("Delete catalog of {}", omNotifyDto.getEntityId());
-            modelService.deleteTrinoCatalog(omNotifyDto.getEntityId());
+            mixRepository.deleteTrinoCatalog(omNotifyDto.getEntityId());
             return "Success to delete catalog [" + omNotifyDto.getEntityId() + "]";
         } else if (omNotifyDto.getEventType().equals(OMNotifyDto.EventType.ENTITY_SOFT_DELETED)
                 || omNotifyDto.getEventType().equals(OMNotifyDto.EventType.ENTITY_RESTORED)) {
