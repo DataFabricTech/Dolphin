@@ -120,8 +120,8 @@ expr
 ;
 
 join_clause
-: table_or_subquery (join_operator table_or_subquery join_constraint?
-                    (join_operator table_or_subquery join_constraint?)*)?
+: table_or_subquery (join_operator table_or_subquery join_constraint
+                    (join_operator table_or_subquery join_constraint)*)?
 ;
 
 ordering_term

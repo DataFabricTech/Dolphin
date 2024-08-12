@@ -219,6 +219,9 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
 
     @Override
     public String visitJoin_constraint(ModelSqlParser.Join_constraintContext ctx) {
+        if (ctx.children == null) {
+            throw new SqlParseException(ErrorCode.INVALID_SQL, "Expecting: 'ON' or 'USING' after join");
+        }
         return ctx.children.stream()
                 .map(x -> x.accept(this))
                 .collect(Collectors.joining(" "));
