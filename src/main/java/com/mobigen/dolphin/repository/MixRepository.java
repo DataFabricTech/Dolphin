@@ -1,9 +1,8 @@
 package com.mobigen.dolphin.repository;
 
 import com.mobigen.dolphin.config.DolphinConfiguration;
-import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMBaseEntity;
-import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMServiceEntity;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.Functions;
@@ -30,13 +29,13 @@ public class MixRepository {
     private final OpenMetadataRepository openMetadataRepository;
 
     public String getOrCreateTrinoCatalog(OMBaseEntity omBaseEntity) {
-        var connInfo = openMetadataRepository.getConnectorInfo(omBaseEntity.getId(), EntityType.DATABASE_SERVICE);
+        var connInfo = openMetadataRepository.getConnectorInfo(omBaseEntity.getId(), omBaseEntity.getType());
         return getOrCreateTrinoCatalog(connInfo);
     }
 
-    public String getOrCreateTrinoCatalog(OMDBServiceEntity omdbServiceEntity) {
+    public String getOrCreateTrinoCatalog(OMServiceEntity omServiceEntity) {
         var catalogs = trinoRepository.getCatalogs();
-        var catalogName = Functions.getCatalogName(omdbServiceEntity.getId());
+        var catalogName = Functions.getCatalogName(omServiceEntity.getId());
         boolean makeCatalog = true;
         for (var catalog : catalogs) {
             if (catalog.equals(catalogName)) {
@@ -47,8 +46,8 @@ public class MixRepository {
         }
         if (makeCatalog) {
             String createQuery = "create catalog " + catalogName;
-            var connInfo = omdbServiceEntity.getConnection().getConfig();
-            if (omdbServiceEntity.getServiceType().equalsIgnoreCase("S3")) {
+            var connInfo = omServiceEntity.getConnection().getConfig();
+            if (omServiceEntity.getServiceType().equalsIgnoreCase("MinIO")) {
                 var optionBuilder = new StringBuilder();
                 for (var optionSet : dolphinConfiguration.getHiveMetastore().getOptions().entrySet()) {
                     optionBuilder.append(" \"")
@@ -57,26 +56,33 @@ public class MixRepository {
                             .append(optionSet.getValue())
                             .append("', ");
                 }
+//                createQuery = createQuery
+//                        + " using hive"
+//                        + " with ("
+//                        + " \"hive.metastore.uri\" = '" + dolphinConfiguration.getHiveMetastore().getUri() + "', "
+//                        + " \"fs.native-s3.enabled\" = 'true', "
+//                        + optionBuilder
+//                        + " \"s3.endpoint\" = '" + connInfo.getAwsConfig().getEndPointURL() + "', "
+//                        + " \"s3.region\" = '" + connInfo.getAwsConfig().getAwsRegion() + "', "
+//                        + " \"s3.aws-access-key\" = '" + connInfo.getAwsConfig().getAwsAccessKeyId() + "', "
+//                        + " \"s3.aws-secret-key\" = '" + connInfo.getAwsConfig().getAwsSecretAccessKey() + "', "
+//                        + " \"s3.role-session-name\" = '" + connInfo.getAwsConfig().getAssumeRoleSessionName() + "')";
                 createQuery = createQuery
-                        + " using hive"
+                        + " using storage"
                         + " with ("
-                        + " \"hive.metastore.uri\" = '" + dolphinConfiguration.getHiveMetastore().getUri() + "', "
-                        + " \"fs.native-s3.enabled\" = 'true', "
                         + optionBuilder
-                        + " \"s3.endpoint\" = '" + connInfo.getAwsConfig().getEndPointURL() + "', "
-                        + " \"s3.region\" = '" + connInfo.getAwsConfig().getAwsRegion() + "', "
-                        + " \"s3.aws-access-key\" = '" + connInfo.getAwsConfig().getAwsAccessKeyId() + "', "
-                        + " \"s3.aws-secret-key\" = '" + connInfo.getAwsConfig().getAwsSecretAccessKey() + "', "
-                        + " \"s3.role-session-name\" = '" + connInfo.getAwsConfig().getAssumeRoleSessionName() + "')";
+                        + " \"hive.s3.endpoint\" = '" + connInfo.getMinioConfig().getEndPointURL() + "', "
+                        + " \"hive.s3.aws-access-key\" = '" + connInfo.getMinioConfig().getAccessKeyId() + "', "
+                        + " \"hive.s3.aws-secret-key\" = '" + connInfo.getMinioConfig().getSecretKey() + "')";
             } else {
                 var username = connInfo.getUsername();
                 String dbms;
                 String password;
-                if ("postgres".equalsIgnoreCase(omdbServiceEntity.getServiceType())) {
+                if ("postgres".equalsIgnoreCase(omServiceEntity.getServiceType())) {
                     dbms = "postgresql";
                     password = connInfo.getAuthType().getPassword();
                 } else {
-                    dbms = omdbServiceEntity.getServiceType().toLowerCase();
+                    dbms = omServiceEntity.getServiceType().toLowerCase();
                     password = connInfo.getPassword();
                     if (password == null) {
                         password = connInfo.getAuthType().getPassword();

@@ -60,29 +60,40 @@ public class OpenMetadataRepository {
                 .block();
     }
 
-    public List<OMDBServiceEntity> getConnectors(String fields, String domain, Integer limit) {
-        var response = getResponse(uriBuilder -> {
-            uriBuilder = uriBuilder
-                    .path("/v1/services/databaseServices");
-            if (fields != null) {
-                uriBuilder = uriBuilder.queryParam("fields", fields);
-            }
-            if (domain != null) {
-                uriBuilder = uriBuilder.queryParam("domain", domain);
-            }
-            if (limit != null) {
-                uriBuilder = uriBuilder.queryParam("limit", limit);
+    public String getResponse(String path, Map<String, String> options) {
+        return getResponse(uriBuilder -> {
+            uriBuilder = uriBuilder.path(path);
+            for (Map.Entry<String, String> entry : options.entrySet()) {
+                uriBuilder = uriBuilder.queryParam(entry.getKey(), entry.getValue());
             }
             return uriBuilder.build();
         });
+    }
 
+    public List<OMServiceEntity> getConnectors(String fields, String domain, Integer limit) {
+        Map<String, String> options = new HashMap<>();
+        if (fields != null) {
+            options.put("fields", fields);
+        }
+        if (domain != null) {
+            options.put("domain", fields);
+        }
+        if (limit != null) {
+            options.put("limit", fields);
+        }
+        var responseDB = getResponse("/v1/services/databaseServices", options);
+        var responseStorage = getResponse("/v1/services/storageServices", options);
         var mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
-            var responseJson = mapper.readTree(response);
-            var connectors = new ArrayList<OMDBServiceEntity>();
-            for (JsonNode jsonNode : responseJson.get("data")) {
-                connectors.add(mapper.convertValue(jsonNode, OMDBServiceEntity.class));
+            var responseDBJson = mapper.readTree(responseDB);
+            var connectors = new ArrayList<OMServiceEntity>();
+            for (JsonNode jsonNode : responseDBJson.get("data")) {
+                connectors.add(mapper.convertValue(jsonNode, OMServiceEntity.class));
+            }
+            var responseStorageJson = mapper.readTree(responseStorage);
+            for (JsonNode jsonNode : responseStorageJson.get("data")) {
+                connectors.add(mapper.convertValue(jsonNode, OMServiceEntity.class));
             }
             return connectors;
         } catch (JsonProcessingException e) {
@@ -92,29 +103,32 @@ public class OpenMetadataRepository {
     }
 
     public List<OMTableEntity> getTables(String fields, String database, String databaseSchema, Integer limit) {
-        var response = getResponse(uriBuilder -> {
-            uriBuilder = uriBuilder
-                    .path("/v1/tables");
-            if (fields != null) {
-                uriBuilder = uriBuilder.queryParam("fields", fields);
-            }
-            if (database != null) {
-                uriBuilder = uriBuilder.queryParam("database", database);
-            }
-            if (databaseSchema != null) {
-                uriBuilder = uriBuilder.queryParam("databaseSchema", databaseSchema);
-            }
-            if (limit != null) {
-                uriBuilder = uriBuilder.queryParam("limit", limit);
-            }
-            return uriBuilder.build();
-        });
+        Map<String, String> options = new HashMap<>();
+        if (fields != null) {
+            options.put("fields", fields);
+        }
+        if (database != null) {
+            options.put("database", fields);
+        }
+        if (databaseSchema != null) {
+            options.put("databaseSchema", fields);
+        }
+        if (limit != null) {
+            options.put("limit", fields);
+        }
+        var responseTable = getResponse("/v1/tables", options);
+        options.put("fields", "children");
+        var responseContainer = getResponse("/v1/containers", options);
         var mapper = new ObjectMapper()
                 .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         try {
-            var responseJson = mapper.readTree(response);
+            var responseTableJson = mapper.readTree(responseTable);
             var tables = new ArrayList<OMTableEntity>();
-            for (JsonNode jsonNode : responseJson.get("data")) {
+            for (JsonNode jsonNode : responseTableJson.get("data")) {
+                tables.add(mapper.convertValue(jsonNode, OMTableEntity.class));
+            }
+            var responseContainerJson = mapper.readTree(responseContainer);
+            for (JsonNode jsonNode : responseContainerJson.get("data")) {
                 tables.add(mapper.convertValue(jsonNode, OMTableEntity.class));
             }
             return tables;
@@ -125,7 +139,7 @@ public class OpenMetadataRepository {
     }
 
     @AssertTrue(message = "Fail to get databaseService information from OpenMetadata")
-    public OMDBServiceEntity getConnectorInfo(UUID id, EntityType entityType) {
+    public OMServiceEntity getConnectorInfo(UUID id, EntityType entityType) {
         String urn;
         if (entityType.equals(EntityType.DATABASE_SERVICE)) {
             urn = "/v1/services/databaseServices/" + id;
@@ -136,14 +150,14 @@ public class OpenMetadataRepository {
         var response = webClient.get()
                 .uri(urn)
                 .retrieve()
-                .bodyToMono(OMDBServiceEntity.class)
+                .bodyToMono(OMServiceEntity.class)
                 .block();
         log.info(Objects.requireNonNull(response).toString());
         return response;
     }
 
     @AssertTrue(message = "Fail to get databaseService information from OpenMetadata")
-    public OMDBServiceEntity getConnectorInfo(String fqn, EntityType entityType) {
+    public OMServiceEntity getConnectorInfo(String fqn, EntityType entityType) {
         String urn;
         if (entityType.equals(EntityType.DATABASE_SERVICE)) {
             urn = "/v1/services/databaseServices/name/" + fqn;
@@ -154,7 +168,7 @@ public class OpenMetadataRepository {
         var response = webClient.get()
                 .uri(urn)
                 .retrieve()
-                .bodyToMono(OMDBServiceEntity.class)
+                .bodyToMono(OMServiceEntity.class)
                 .block();
         log.info(Objects.requireNonNull(response).toString());
         return response;
@@ -175,8 +189,18 @@ public class OpenMetadataRepository {
     }
 
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
-    public OMTableEntity getTable(String fullyQualifiedName) {
-        return (OMTableEntity) getTable(fullyQualifiedName, OMTableEntity.class);
+    public OMTableEntity getTableOrContainer(String fullyQualifiedName) {
+        try {
+            return (OMTableEntity) getTable(fullyQualifiedName, OMTableEntity.class);
+        } catch (Exception e) {
+            try {
+                log.warn(fullyQualifiedName + " is not a table");
+                return (OMTableEntity) getContainer(fullyQualifiedName, OMTableEntity.class);
+            } catch (Exception e1) {
+                log.error(e1.getMessage(), e1);
+                throw e1;
+            }
+        }
     }
 
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
@@ -189,6 +213,21 @@ public class OpenMetadataRepository {
                 .retry(0)
                 .block();
         log.info("tableName: {}, fqn: {}",
+                Objects.requireNonNull(response).getName(),
+                Objects.requireNonNull(response).getFullyQualifiedName());
+        return response;
+    }
+
+    @AssertTrue(message = "Fail to get container information from OpenMetadata")
+    public OMBaseEntity getContainer(String fullyQualifiedName, Class<? extends OMBaseEntity> outputClazz) {
+        var webClient = getWebClient();
+        var response = webClient.get()
+                .uri("/v1/containers/name/" + fullyQualifiedName)
+                .retrieve()
+                .bodyToMono(outputClazz)
+                .retry(0)
+                .block();
+        log.info("containerName: {}, fqn: {}",
                 Objects.requireNonNull(response).getName(),
                 Objects.requireNonNull(response).getFullyQualifiedName());
         return response;

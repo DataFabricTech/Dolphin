@@ -8,7 +8,7 @@ import com.mobigen.dolphin.dto.response.ModelDto;
 import com.mobigen.dolphin.dto.response.RecommendModelDto;
 import com.mobigen.dolphin.entity.local.ModelQueueEntity;
 import com.mobigen.dolphin.entity.openmetadata.EntityType;
-import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMServiceEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
@@ -65,7 +65,7 @@ public class ModelService {
         String sql = "create view " + trinoModel;
 
         if (createModelDto.getBaseModel().getType() == ModelType.CONNECTOR) {
-            OMDBServiceEntity connInfo;
+            OMServiceEntity connInfo;
             if (createModelDto.getBaseModel().getConnectorId() != null) {
                 connInfo = openMetadataRepository.getConnectorInfo(createModelDto.getBaseModel().getConnectorId(),
                         EntityType.DATABASE_SERVICE);
@@ -151,7 +151,7 @@ public class ModelService {
         return fusionModelRepository.findAllByFullyQualifiedNameOrModelIdOfOM(fullyQualifiedName, modelId);
     }
 
-    public List<OMDBServiceEntity> getOpenMetadataDBServices(String fields, String domain, Integer limit) {
+    public List<OMServiceEntity> getOpenMetadataDBServices(String fields, String domain, Integer limit) {
         return openMetadataRepository.getConnectors(fields, domain, limit);
     }
 

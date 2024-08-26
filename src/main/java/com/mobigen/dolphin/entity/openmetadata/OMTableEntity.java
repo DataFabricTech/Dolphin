@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * <p>
+ * <p> table & container
  * Created by fwani.
  *
  * @version 0.0.1
@@ -47,6 +47,14 @@ public class OMTableEntity extends OMBaseEntity {
     private String tableType;
     private String serviceType;
     private String sourceHash;
+
+    // minio configs
+    private String prefix;
+    private String fullPath;
+    private Integer numberOfObjects;
+    private Long size;
+    private List<String> fileFormats;
+
 
     @Data
     public static class OMColumn {

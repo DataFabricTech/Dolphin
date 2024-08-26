@@ -4,6 +4,7 @@ import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.entity.local.FusionModelEntity;
 import com.mobigen.dolphin.entity.local.JobEntity;
+import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.exception.SqlParseException;
@@ -272,7 +273,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         var token = ".*";
         var pattern = Pattern.compile(token + "\\." + token + "\\." + token + "\\." + token);
         if (pattern.matcher(modelName).matches()) {
-            return openMetadataRepository.getTable(modelName);
+            return openMetadataRepository.getTableOrContainer(modelName);
         }
         var i = 0;
         ExecuteDto.ReferenceModel matched = null;
@@ -289,7 +290,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
             return null;
         }
         return matched.getFullyQualifiedName() != null ?
-                openMetadataRepository.getTable(matched.getFullyQualifiedName()) :
+                openMetadataRepository.getTableOrContainer(matched.getFullyQualifiedName()) :
                 openMetadataRepository.getTable(matched.getId());
     }
 
@@ -320,7 +321,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
             if (modelCache.containsKey(fqn)) {
                 return modelCache.get(fqn);
             }
-            tableInfo = openMetadataRepository.getTable(fqn);
+            tableInfo = openMetadataRepository.getTableOrContainer(fqn);
             modelName = tableInfo.getName();
         }
         if (tableInfo == null) {
@@ -328,24 +329,36 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
             schemaName = dolphinConfiguration.getModel().getSchema().getDb();
             log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
             fullTrinoModelName = catalogName + "." + schemaName + "." + modelName;
-            tableInfo = openMetadataRepository.getTable(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + fullTrinoModelName);
+            tableInfo = openMetadataRepository.getTableOrContainer(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + fullTrinoModelName);
         } else {
+            // om 에서 정보를 가져옴
             if (tableInfo.getService().getName().equals(dolphinConfiguration.getModel().getOmTrinoDatabaseService())
                     && tableInfo.getDatabase().getName().equals(dolphinConfiguration.getModel().getCatalog())) {
+                // dolphin(trino) 를 통해 만든 모델(view) 인경우
                 catalogName = dolphinConfiguration.getModel().getCatalog();
                 schemaName = dolphinConfiguration.getModel().getSchema().getDb();
             } else {
 //                catalogName = Functions.getCatalogName(tableInfo.getService().getId());
                 catalogName = mixRepository.getOrCreateTrinoCatalog(tableInfo.getService());
-                if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
-                    schemaName = tableInfo.getDatabaseSchema().getName();
+                if (tableInfo.getService().getType().equals(EntityType.DATABASE_SERVICE)) {
+                    if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
+                        schemaName = tableInfo.getDatabaseSchema().getName();
+                    } else {
+                        schemaName = tableInfo.getDatabase().getName();
+                    }
                 } else {
-                    schemaName = tableInfo.getDatabase().getName();
+                    // Storage Service
+                    schemaName = tableInfo.getFileFormats().getFirst();
                 }
             }
         }
+        if (tableInfo.getService().getType().equals(EntityType.STORAGE_SERVICE)) {
+            modelName = '"' + tableInfo.getFullPath() + '"';
+        } else {
+            modelName = tableInfo.getName();
+        }
         log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
-        fullTrinoModelName = catalogName + "." + schemaName + "." + tableInfo.getName();
+        fullTrinoModelName = catalogName + "." + schemaName + "." + modelName;
         modelCache.put(modelName, fullTrinoModelName);
         usedModelHistory.add(FusionModelEntity.builder()
                 .job(job)

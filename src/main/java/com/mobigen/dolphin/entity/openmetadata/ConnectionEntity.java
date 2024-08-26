@@ -2,6 +2,8 @@ package com.mobigen.dolphin.entity.openmetadata;
 
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * <p>
  * Created by fwani.
@@ -24,6 +26,8 @@ public class ConnectionEntity {
         private String hostPort;
         private String database;
         private AwsConfigEntity awsConfig;
+        private MinIOConfigEntity minioConfig;
+        private List<String> bucketNames;
         private Boolean supportsMetadataExtraction;
         private Boolean supportsDBTExtraction;
         private Boolean supportsProfiler;
@@ -42,5 +46,12 @@ public class ConnectionEntity {
         private String awsRegion;
         private String endPointURL;
         private String assumeRoleSessionName;
+    }
+
+    @Data
+    public static class MinIOConfigEntity {
+        private String accessKeyId;
+        private String secretKey;
+        private String endPointURL;
     }
 }

@@ -7,7 +7,7 @@ import com.mobigen.dolphin.dto.response.ModelDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.dto.response.RecommendModelDto;
 import com.mobigen.dolphin.entity.local.JobEntity;
-import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMServiceEntity;
 import com.mobigen.dolphin.service.ModelService;
 import com.mobigen.dolphin.service.QueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -112,7 +112,7 @@ public class ApiController {
 
     @Operation(summary = "Get list of DatabaseServices of OpenMetadata")
     @GetMapping("/open-metadata/connector")
-    public List<OMDBServiceEntity> getOpenMetadataConnectors(
+    public List<OMServiceEntity> getOpenMetadataConnectors(
             @RequestParam(required = false) String fields,
             @RequestParam(required = false) String domain,
             @RequestParam(required = false, defaultValue = "10") Integer limit

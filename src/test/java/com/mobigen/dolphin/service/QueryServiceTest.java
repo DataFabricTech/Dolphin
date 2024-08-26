@@ -4,8 +4,9 @@ import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.entity.local.JobEntity;
+import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMBaseEntity;
-import com.mobigen.dolphin.entity.openmetadata.OMDBServiceEntity;
+import com.mobigen.dolphin.entity.openmetadata.OMServiceEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.MixRepository;
@@ -96,16 +97,17 @@ class QueryServiceTest {
                 .name("abc")
                 .service(OMBaseEntity.builder()
                         .id(UUID.randomUUID())
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
                 .serviceType("datamodels")
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
                 .build();
-        doReturn(exampleTable).when(openMetadataRepository).getTable(anyString());
+        doReturn(exampleTable).when(openMetadataRepository).getTableOrContainer(anyString());
 
         var input = new ExecuteDto();
         input.setQuery("select a.id a_id, a.name as a_name from abc a");
@@ -125,26 +127,28 @@ class QueryServiceTest {
                 .name("abc")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.abc"));
         doReturn(OMTableEntity.builder()
                 .name("bcd")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id a_id, a.name as a_name, b.long, b.short from abc a, bcd b on a.id = b.id");
         var job = queryService.createJob(input, true);
@@ -165,26 +169,28 @@ class QueryServiceTest {
                 .name("abc")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.abc"));
         doReturn(OMTableEntity.builder()
                 .name("bcd")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
                 " union select b.id, b.name from bcd b limit 3,10");
@@ -209,18 +215,19 @@ class QueryServiceTest {
             var service = OMBaseEntity.builder()
                     .name(pair.right().get(0))
                     .id(pair.left().right())
+                    .type(EntityType.DATABASE_SERVICE)
                     .build();
             doReturn(getCatalogName(pair.left().right())).when(mixRepository).getOrCreateTrinoCatalog(eq(service));
             doReturn(OMTableEntity.builder()
                     .name(pair.left().left())
                     .service(service)
-                    .database(OMDBServiceEntity.builder()
+                    .database(OMServiceEntity.builder()
                             .name(pair.right().get(1))
                             .build())
-                    .databaseSchema(OMDBServiceEntity.builder()
+                    .databaseSchema(OMServiceEntity.builder()
                             .name(pair.right().get(2))
                             .build())
-                    .build()).when(openMetadataRepository).getTable(eq(String.join(".", pair.right())));
+                    .build()).when(openMetadataRepository).getTableOrContainer(eq(String.join(".", pair.right())));
         }
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
@@ -259,14 +266,15 @@ class QueryServiceTest {
                     .service(OMBaseEntity.builder()
                             .name(pair.right().get(0))
                             .id(pair.left().right())
+                            .type(EntityType.DATABASE_SERVICE)
                             .build())
-                    .database(OMDBServiceEntity.builder()
+                    .database(OMServiceEntity.builder()
                             .name(pair.right().get(1))
                             .build())
-                    .databaseSchema(OMDBServiceEntity.builder()
+                    .databaseSchema(OMServiceEntity.builder()
                             .name(pair.right().get(2))
                             .build())
-                    .build()).when(openMetadataRepository).getTable(eq(String.join(".", pair.right())));
+                    .build()).when(openMetadataRepository).getTableOrContainer(eq(String.join(".", pair.right())));
         }
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
@@ -289,26 +297,28 @@ class QueryServiceTest {
                 .name("abc")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.abc"));
         doReturn(OMTableEntity.builder()
                 .name("bcd")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
                 " union select b.id, b.name from bcd b limit 3,10");
@@ -323,26 +333,28 @@ class QueryServiceTest {
                 .name("abc")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.abc"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.abc"));
         doReturn(OMTableEntity.builder()
                 .name("bcd")
                 .service(OMBaseEntity.builder()
                         .name("datamodels")
+                        .type(EntityType.DATABASE_SERVICE)
                         .build())
-                .database(OMDBServiceEntity.builder()
+                .database(OMServiceEntity.builder()
                         .name("internalhive")
                         .build())
-                .databaseSchema(OMDBServiceEntity.builder()
+                .databaseSchema(OMServiceEntity.builder()
                         .name("default")
                         .build())
-                .build()).when(openMetadataRepository).getTable(eq("datamodels.internalhive.default.bcd"));
+                .build()).when(openMetadataRepository).getTableOrContainer(eq("datamodels.internalhive.default.bcd"));
         var input = new ExecuteDto();
         input.setQuery("select a.id, a.name from abc a" +
                 " union select b.id, b.name from bcd b limit 3,10");

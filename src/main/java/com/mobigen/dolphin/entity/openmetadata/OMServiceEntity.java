@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 /**
- * <p>
+ * <p> databaseService & ObjectStoreService
  * Created by fwani.
  *
  * @version 0.0.1
@@ -16,7 +16,7 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class OMDBServiceEntity extends OMBaseEntity {
+public class OMServiceEntity extends OMBaseEntity {
     private String serviceType;
     private ConnectionEntity connection;
     private Float version;
