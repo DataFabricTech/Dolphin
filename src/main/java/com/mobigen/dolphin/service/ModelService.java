@@ -6,7 +6,6 @@ import com.mobigen.dolphin.dto.request.CreateModelDto;
 import com.mobigen.dolphin.dto.request.CreateModelWithFileDto;
 import com.mobigen.dolphin.dto.response.ModelDto;
 import com.mobigen.dolphin.dto.response.RecommendModelDto;
-import com.mobigen.dolphin.entity.local.ModelQueueEntity;
 import com.mobigen.dolphin.entity.openmetadata.EntityType;
 import com.mobigen.dolphin.entity.openmetadata.OMServiceEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
@@ -16,15 +15,15 @@ import com.mobigen.dolphin.repository.local.ModelQueueRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.Functions;
-import com.mobigen.dolphin.util.IngestionType;
 import com.mobigen.dolphin.util.ModelType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -63,6 +62,8 @@ public class ModelService {
                 + "." + dolphinConfiguration.getModel().getSchema().getDb()
                 + "." + createModelDto.getModelName();
         String sql = "create view " + trinoModel;
+        // Map < FromFQN , ToFQN >  lineage
+        Map<String, String> lineage = new HashMap<>();
 
         if (createModelDto.getBaseModel().getType() == ModelType.CONNECTOR) {
             OMServiceEntity connInfo;
@@ -73,7 +74,7 @@ public class ModelService {
                 connInfo = openMetadataRepository.getConnectorInfo(createModelDto.getBaseModel().getConnectorFQN(),
                         EntityType.DATABASE_SERVICE);
             }
-            System.out.println(connInfo);
+            log.info(connInfo.toString());
             var catalogName = mixRepository.getOrCreateTrinoCatalog(connInfo);
             String fqn;
             if ("postgresql".contains(connInfo.getServiceType().toLowerCase())) {
@@ -95,14 +96,8 @@ public class ModelService {
                         + "." + createModelDto.getBaseModel().getDatabase()
                         + "." + createModelDto.getBaseModel().getTable();
             }
-            var modelQueueEntity = ModelQueueEntity.builder()
-                    .trinoModelName(trinoModel)
-                    .modelNameFqn(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel)
-                    .fromFqn(fqn)
-                    .command(ModelQueueEntity.Command.LINEAGE)
-                    .build();
+            lineage.put(fqn, dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel);
             trinoRepository.execute(sql);
-            modelQueueRepository.save(modelQueueEntity);
         } else if (createModelDto.getBaseModel().getType() == ModelType.MODEL) {
             sql = sql + " as select " + selectedColumns
                     + " from " + dolphinConfiguration.getModel().getCatalog()
@@ -118,19 +113,16 @@ public class ModelService {
             var parseTree = getParseTree(createModelDto.getBaseModel().getQuery());
             var convertedQuery = getConvertedSql(visitor, parseTree);
             sql = sql + " as " + convertedQuery;
-            List<ModelQueueEntity> modelQueueEntities = new ArrayList<>();
             for (var modelHistory : visitor.getUsedModelHistory()) {
-                modelQueueEntities.add(ModelQueueEntity.builder()
-                        .trinoModelName(trinoModel)
-                        .modelNameFqn(dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel)
-                        .fromFqn(modelHistory.getFullyQualifiedName())
-                        .command(ModelQueueEntity.Command.LINEAGE)
-                        .build());
+                lineage.put(modelHistory.getFullyQualifiedName(), dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel);
             }
             trinoRepository.execute(sql);
-            modelQueueRepository.saveAll(modelQueueEntities);
         }
-        openMetadataRepository.callIngestion(IngestionType.METADATA);
+        // Get Model Data(Columns, Types) From Trino
+        var resultDto = trinoRepository.executeQuery("select * from " + trinoModel, 50, 0, null, null);
+        // Create Model Data(Columns, Types) From Trino
+        openMetadataRepository.createModel(createModelDto, lineage, resultDto);
+
         return ModelDto.builder()
                 .name(createModelDto.getModelName())
                 .build();

@@ -1,0 +1,48 @@
+POST http://127.0.0.1:8080/dolphin/v1/model
+Content-Type: application/json
+
+{
+  "modelName": "jb_test_model",
+  "displayName": "JB Test Model",
+  "description": "This is test model(can use markdown format) by jblim",
+  "tags": [
+    "ovp_category.550e8400-e29b-41d4-a716-446655440000"
+  ],
+  "baseModel": {
+    "type": "QUERY",
+    "query": "select * from `건강보험심사평가원_계절성질환(한랭_및_온열질환)_진료비_통계`",
+    "referenceModels": [
+      {
+        "name": "건강보험심사평가원_계절성질환(한랭_및_온열질환)_진료비_통계",
+        "fullyQualifiedName": "MySQL.default.datafabric.건강보험심사평가원_계절성질환(한랭_및_온열질환)_진료비_통계"
+      }
+    ]
+  }
+}
+
+###
+
+POST http://127.0.0.1:8080/dolphin/v1/model
+Content-Type: application/json
+
+{
+  "modelName": "jb_test_model2",
+  "displayName": "JB Test Model2",
+  "description": "This is test model(can use markdown format) by jblim2",
+  "tags": [
+    "ovp_category.550e8400-e29b-41d4-a716-446655440000"
+  ],
+  "baseModel": {
+    "type": "QUERY",
+    "query": "select * from `준범`",
+    "referenceModels": [
+      {
+        "name": "준범",
+        "fullyQualifiedName": "jb-test.datafabric.datafabric.준범"
+      }
+    ]
+  }
+}
+
+###
+
