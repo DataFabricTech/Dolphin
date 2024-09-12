@@ -82,31 +82,30 @@ Content-Type: application/json
 }
 
 ###
-{
-  "query": "select count(*) from dm_acc_info join dm_acc_main_code on dm_acc_info.acc_type = dm_acc_main_code.acc_type",
-  "referenceModels": [
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dt_dataset",
-      "name": "dt_dataset"
-    },
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.spatial_ref_sys",
-      "name": "spatial_ref_sys"
-    },
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_info",
-      "name": "dm_acc_info"
-    },
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_main_code",
-      "name": "dm_acc_main_code"
-    }
-  ]
-}
-
+#{
+#  "query": "select count(*) from dm_acc_info join dm_acc_main_code on dm_acc_info.acc_type = dm_acc_main_code.acc_type",
+#  "referenceModels": [
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dt_dataset",
+#      "name": "dt_dataset"
+#    },
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.spatial_ref_sys",
+#      "name": "spatial_ref_sys"
+#    },
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_info",
+#      "name": "dm_acc_info"
+#    },
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_main_code",
+#      "name": "dm_acc_main_code"
+#    }
+#  ]
+#}
 ###
 
-POST http://127.0.0.1:8080/dolphin/v1/model
+POST http://{{host}}:{{port}}/dolphin/v1/model
 Content-Type: application/json
 
 {
@@ -129,14 +128,15 @@ Content-Type: application/json
 }
 
 ###
+###
 
-POST http://127.0.0.1:8080/dolphin/v1/model
+POST http://{{host}}:{{port}}/dolphin/v1/model
 Content-Type: application/json
 
 {
-  "modelName": "jb_test_model2",
-  "displayName": "JB Test Model2",
-  "description": "This is test model(can use markdown format) by jblim2",
+  "modelName": "jb_test_model3",
+  "displayName": "JB Test Model3",
+  "description": "This is test model(can use markdown format) by jblim3",
   "tags": [
     "ovp_category.550e8400-e29b-41d4-a716-446655440000"
   ],

@@ -123,8 +123,10 @@ public class ModelService {
         // Create Model Data(Columns, Types) From Trino
         openMetadataRepository.createModel(createModelDto, lineage, resultDto);
 
+        // TODO : create model 의 응답도 변경해야 할?
         return ModelDto.builder()
                 .name(createModelDto.getModelName())
+                .description(createModelDto.getDescription())
                 .build();
     }
 
