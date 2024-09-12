@@ -11,7 +11,7 @@ dolphin:
         driver-class-name: ${DB_DRIVER_CLASSPATH:org.postgresql.Driver}
         username: ${DB_USER:dolphin}
         password: ${DB_PASSWORD:biris.manse}
-        jdbc-url: jdbc:${DB_TYPE:postgresql}://${DB_HOST:ovp-db}:${DB_PORT:5432}/${DB_NAME:dolphin}
+        jdbc-url: jdbc:${DB_TYPE:postgresql}://${DB_HOST:192.168.109.254}:${DB_PORT:30207}/${DB_NAME:dolphin}
     hibernate:
       property:
         "[hibernate.hbm2ddl.auto]": ${DB_DDL_AUTO:update}
@@ -19,20 +19,20 @@ dolphin:
     datasource:
       hikari:
         driver-class-name: io.trino.jdbc.TrinoDriver
-        jdbc-url: jdbc:trino://${TRINO_HOST:trino-svc}:${TRINO_PORT:8080}
+        jdbc-url: jdbc:trino://${TRINO_HOST:192.168.109.254}:${TRINO_PORT:30967}
         username: dolphin
         password:
     hibernate:
       property:
         "[hibernate.dialect]": org.hibernate.dialect.H2Dialect
   openmetadata:
-    api-url: http://${OPEN_METADATA_HOST:fabric-server}:${OPEN_METADATA_PORT:8585}/api
+    api-url: http://${OPEN_METADATA_HOST:192.168.109.254}:${OPEN_METADATA_PORT:31500}/api
     bot-token: "Bearer eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImlzQm90IjpmYWxzZSwiaXNzIjoib3Blbi1tZXRhZGF0YS5vcmciLCJpYXQiOjE2NjM5Mzg0NjIsImVtYWlsIjoiYWRtaW5Ab3Blbm1ldGFkYXRhLm9yZyJ9.tS8um_5DKu7HgzGBzS1VTA5uUjKWOCU0B_j08WXBiEC0mr0zNREkqVfwFDD-d24HlNEbrqioLsBuFRiwIWKc1m_ZlVQbG7P36RUxhuv2vbSp80FKyNM-Tj93FDzq91jsyNmsQhyNv_fNr3TXfzzSPjHt8Go0FMMP66weoKMgW2PbXlhVKwEuXUHyakLLzewm9UMeQaEiRzhiTMU3UkLXcKbYEJJvfNFcLwSl9W8JCO_l0Yj3ud-qt_nQYEZwqW6u5nfdQllN133iikV4fM5QZsMCnm8Rq1mvLR0y9bmJiD7fwM1tmJ791TUWqmKaTnP49U493VanKpUAfzIiOiIbhg"
     ingestion:
       metadata: ${INGESTION_ID_METADATA}
       profiler: ${INGESTION_ID_PROFILER}
   hive-metastore:
-    uri: thrift://${HIVE_HOST:hive-metastore-svc}:${HIVE_PORT:9083}
+    uri: thrift://${HIVE_HOST:192.168.109.254}:${HIVE_PORT:32719}
     options:
       hive:
         non-managed-table-writes-enabled: true
@@ -83,7 +83,7 @@ otel:
   exporter:
     otlp:
       protocol: grpc
-      endpoint: http://${JAEGER_HOST:jaeger-svc}:${JAEGER_PORT:4317}
+      endpoint: http://${JAEGER_HOST:192.168.109.254}:${JAEGER_PORT:32172}
   traces:
     exporter: otlp
   metrics:

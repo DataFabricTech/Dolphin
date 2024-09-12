@@ -44,16 +44,6 @@ bin/
 
 *.log
 
-### Goland ###
-/services/gateway/.idea/
-gradle/wrapper/
-
-## 생성되는 소스 코드 제외
-/share/models/src/main/golang/
-/services/gateway/protobuf/
-/services/gateway/.cache/
-/services/gateway/Library/Caches/go-build/
-
 *.db
 Chart.lock
 dev/**/*.csv

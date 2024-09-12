@@ -1,44 +1,60 @@
-FROM openjdk:21-jdk-slim as package-image
+ARG PROJECT_VERSION=v1.0.1
+ARG DESCRIPTION="Dolphin Image"
+ARG INCLUDE_TESTS=false
 
-COPY gradle /app/gradle
-COPY --chmod=755 gradlew /app/
-COPY gradle.properties /app/
+FROM gradle:8.10-jdk21-alpine as build-image
+
+# Multi Stage 에서는 ARG 를 FROM 다음에 재 선언해주어야한다.
+ARG INCLUDE_TESTS
+
+WORKDIR /app
+
 COPY aggregation /app/aggregation
 COPY build-logic /app/build-logic
 COPY build.gradle.kts /app/
 COPY settings.gradle.kts /app/
+
+RUN gradle clean build -x test --parallel --continue > /dev/null 2>&1 || true
+
+COPY libs /app/libs
 COPY src /app/src
+COPY build.sh /app/build.sh
 
-WORKDIR /app
+RUN chmod 755 ./build.sh
+RUN /app/build.sh ${INCLUDE_TESTS}
 
-RUN ./gradlew build -x test --parallel --continue > /dev/null 2>&1 || true
+FROM eclipse-temurin:21.0.4_7-jre-alpine as prod
 
-ARG project_version=v0.1.0
-ARG skip_test=true
-
-RUN ./gradlew clean build --no-parallel -Dorg.gradle.workers.max=1
-
-FROM openjdk:21-jdk-slim as prod
-
-ARG project_version=v0.1.0
-ARG description="Dolphin Image"
+# Multi Stage 에서는 ARG 를 FROM 다음에 재 선언해주어야한다.
+ARG PROJECT_VERSION
+ARG DESCRIPTION
 
 LABEL email="irisdev@mobigen.com"
 LABEL name="mobigen-platform-team"
-LABEL version="${project_version}"
-LABEL description="${description}"
+LABEL version="${PROJECT_VERSION}"
+LABEL description="${DESCRIPTION}"
 
-RUN apt-get update && apt-get install -y locales \
-    && sed -i 's/^# \(ko_KR.UTF-8\)/\1/' /etc/locale.gen \
-    && locale-gen && localedef -f UTF-8 -i ko_KR ko_KR.UTF-8 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    curl \
+    iputils \
+    net-tools \
+    tzdata
 
-COPY --from=package-image /app/build/libs/dolphin-1.0-SNAPSHOT.jar /app/dolphin.jar
+# Set Locale
+ENV LC_ALL=ko_KR.UTF-8 \
+    LANG=ko_KR.UTF-8 \
+    LANGUAGE=ko_KR.UTF-8
+
+# Set Timezone
+#RUN cp /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+#	echo "Asia/Seoul" > /etc/timezone
+
+COPY --from=build-image /app/build/libs/dolphin-1.0-SNAPSHOT.jar /app/dolphin.jar
 COPY src/main/resources/application.yml.template /app/application.yml
 
 WORKDIR /app
 ENV CONFIG_FILE "/app/application.yml"
-CMD java -jar -Dspring.config.location=${CONFIG_FILE} /app/dolphin.jar
+CMD java -jar /app/dolphin.jar --spring.config.location=file:/app/application.yml
 
 FROM package-image as test-result-image
 

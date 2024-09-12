@@ -29,7 +29,7 @@ public class ModelQueueScheduler {
     private final ModelQueueRepository modelQueueRepository;
     private final OpenMetadataRepository openMetadataRepository;
 
-    @Scheduled(fixedRate = 5000)
+//    @Scheduled(fixedRate = 50000)
     public void modelQueueJob() {
         var data = modelQueueRepository.findAll();
         if (data.isEmpty()) {

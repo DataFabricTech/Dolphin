@@ -301,6 +301,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         String modelName;
         String fullTrinoModelName;
         OMTableEntity tableInfo;
+        // 레퍼런스 모델 확인
         if (ctx.children.size() == 1) {
             // 모델 명만 입력
             modelName = visitAny_name(ctx.any_name(0));
@@ -324,6 +325,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
             tableInfo = openMetadataRepository.getTableOrContainer(fqn);
             modelName = tableInfo.getName();
         }
+        // 쿼리 상 `from model` 을 이용해 트리노(hive view)에서 검색
         if (tableInfo == null) {
             catalogName = dolphinConfiguration.getModel().getCatalog();
             schemaName = dolphinConfiguration.getModel().getSchema().getDb();
@@ -338,13 +340,13 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
                 catalogName = dolphinConfiguration.getModel().getCatalog();
                 schemaName = dolphinConfiguration.getModel().getSchema().getDb();
             } else {
-//                catalogName = Functions.getCatalogName(tableInfo.getService().getId());
+                // catalogName = Functions.getCatalogName(tableInfo.getService().getId());
                 catalogName = mixRepository.getOrCreateTrinoCatalog(tableInfo.getService());
                 if (tableInfo.getService().getType().equals(EntityType.DATABASE_SERVICE)) {
                     if ("postgres".equalsIgnoreCase(tableInfo.getServiceType())) {
                         schemaName = tableInfo.getDatabaseSchema().getName();
                     } else {
-                        schemaName = tableInfo.getDatabase().getName();
+                        schemaName = tableInfo.getDatabaseSchema().getName();
                     }
                 } else {
                     // Storage Service
@@ -355,7 +357,7 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         if (tableInfo.getService().getType().equals(EntityType.STORAGE_SERVICE)) {
             modelName = '"' + tableInfo.getFullPath() + '"';
         } else {
-            modelName = tableInfo.getName();
+            modelName = '"' + tableInfo.getName() + '"';
         }
         log.info("catalog : {} schema : {} modelName : {}", catalogName, schemaName, modelName);
         fullTrinoModelName = catalogName + "." + schemaName + "." + modelName;

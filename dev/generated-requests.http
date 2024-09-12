@@ -82,24 +82,75 @@ Content-Type: application/json
 }
 
 ###
+#{
+#  "query": "select count(*) from dm_acc_info join dm_acc_main_code on dm_acc_info.acc_type = dm_acc_main_code.acc_type",
+#  "referenceModels": [
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dt_dataset",
+#      "name": "dt_dataset"
+#    },
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.spatial_ref_sys",
+#      "name": "spatial_ref_sys"
+#    },
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_info",
+#      "name": "dm_acc_info"
+#    },
+#    {
+#      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_main_code",
+#      "name": "dm_acc_main_code"
+#    }
+#  ]
+#}
+###
+
+POST http://{{host}}:{{port}}/dolphin/v1/model
+Content-Type: application/json
+
 {
-  "query": "select count(*) from dm_acc_info join dm_acc_main_code on dm_acc_info.acc_type = dm_acc_main_code.acc_type",
-  "referenceModels": [
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dt_dataset",
-      "name": "dt_dataset"
-    },
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.spatial_ref_sys",
-      "name": "spatial_ref_sys"
-    },
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_info",
-      "name": "dm_acc_info"
-    },
-    {
-      "fullyQualifiedName": "Fabric-Sample.datafabric.public.dm_acc_main_code",
-      "name": "dm_acc_main_code"
-    }
-  ]
+  "modelName": "jb_test_model",
+  "displayName": "JB Test Model",
+  "description": "This is test model(can use markdown format) by jblim",
+  "tags": [
+    "ovp_category.550e8400-e29b-41d4-a716-446655440000"
+  ],
+  "baseModel": {
+    "type": "QUERY",
+    "query": "select * from `건강보험심사평가원_계절성질환(한랭_및_온열질환)_진료비_통계`",
+    "referenceModels": [
+      {
+        "name": "건강보험심사평가원_계절성질환(한랭_및_온열질환)_진료비_통계",
+        "fullyQualifiedName": "MySQL.default.datafabric.건강보험심사평가원_계절성질환(한랭_및_온열질환)_진료비_통계"
+      }
+    ]
+  }
 }
+
+###
+###
+
+POST http://{{host}}:{{port}}/dolphin/v1/model
+Content-Type: application/json
+
+{
+  "modelName": "jb_test_model3",
+  "displayName": "JB Test Model3",
+  "description": "This is test model(can use markdown format) by jblim3",
+  "tags": [
+    "ovp_category.550e8400-e29b-41d4-a716-446655440000"
+  ],
+  "baseModel": {
+    "type": "QUERY",
+    "query": "select * from `준범`",
+    "referenceModels": [
+      {
+        "name": "준범",
+        "fullyQualifiedName": "jb-test.datafabric.datafabric.준범"
+      }
+    ]
+  }
+}
+
+###
+
