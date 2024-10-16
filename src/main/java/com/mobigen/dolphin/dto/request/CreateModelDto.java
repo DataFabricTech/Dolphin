@@ -26,6 +26,15 @@ public class CreateModelDto {
     @NotNull(message = "modelName is required value.")
     private String modelName;
 
+    @Schema(description = "DataModel DisplayName to create", example = "Test Model")
+    private String displayName;
+
+    @Schema(description = "DataModel Description", example = "This is test model(can use markdown format)")
+    private String description;
+
+    @Schema(description = "DataModel Tags:[FQN]", example = "[\"classification.apple\", \"classification.banana\"]")
+    private List<String> tags;
+
     @Valid
     @Schema(description = "Conditions of base DataModel")
     @NotNull(message = "baseModel is required value.")

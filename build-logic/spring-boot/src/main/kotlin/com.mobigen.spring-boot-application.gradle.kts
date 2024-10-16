@@ -1,6 +1,7 @@
 plugins {
     id("com.mobigen.commons")
     id("org.springframework.boot")
+    id("io.spring.dependency-management")
 }
 
 dependencies {

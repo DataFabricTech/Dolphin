@@ -154,6 +154,4 @@ public class TrinoRepository {
     public String asyncExecuteQuery(UUID jobId, String sql) {
         return asyncExecuteQuery(jobId, sql, false);
     }
-
-
 }

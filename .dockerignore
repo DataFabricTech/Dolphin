@@ -1,3 +1,11 @@
 **/build/
 **/.gradle/
+**/.idea/
+.github/
+config/
+deploy/
+dev/
+docs/
+gradle/
+
 application.yml.template
