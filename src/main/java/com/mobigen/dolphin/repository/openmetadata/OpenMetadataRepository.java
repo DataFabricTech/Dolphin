@@ -10,6 +10,7 @@ import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.entity.openmetadata.*;
 import com.mobigen.dolphin.util.IngestionType;
 import com.mobigen.dolphin.util.ModelType;
+import com.mobigen.dolphin.util.Pair;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -345,21 +346,21 @@ public class OpenMetadataRepository {
 
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
     public OMTableEntity getTableOrContainer(String fullyQualifiedName) {
+        return getTableOrContainerWithType(fullyQualifiedName).left();
+    }
+
+    public Pair<OMTableEntity, String> getTableOrContainerWithType(String fullyQualifiedName) {
         try {
-            return (OMTableEntity) getTable(fullyQualifiedName, OMTableEntity.class);
+            return new Pair<>((OMTableEntity) getTable(fullyQualifiedName, OMTableEntity.class), "table");
         } catch (Exception e) {
             try {
                 log.warn(fullyQualifiedName + " is not a table");
-                return (OMTableEntity) getContainer(fullyQualifiedName, OMTableEntity.class);
+                return new Pair<>((OMTableEntity) getContainer(fullyQualifiedName, OMTableEntity.class), "container");
             } catch (Exception e1) {
                 log.error(e1.getMessage(), e1);
                 throw e1;
             }
         }
-        // eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImRhdGEtZW5naW5lLWJvdCIsInJvbGVzIjpbIkluZ2VzdGlvbkJvdFJvbGUiLCJQcm9maWxlckJvdFJvbGUiXSwiZW1haWwiOiJkYXRhZW5naW5lQG1vYmlnZW4uY29tIiwiaXNCb3QiOnRydWUsInRva2VuVHlwZSI6IkJPVCIsImlhdCI6MTcyNjAzNTMwMSwiZXhwIjpudWxsfQ.jCnL0D4ZvbBBJxCMoLeArJNtQxAhsE2q6bk_BEFrMs1-oPa_HUOA8X2DVVLgbMg04mDWNTKnH9BPIH57sImDU_eMerRYiEBY68LV8SL6IKqxIqXdZ6BF3Nzd9K2HqDIuSKnyWlAyF7JIhIu5noldH7m1GnDMgGu8PXPeCL12CDgbFVsIiTGuNPJSTK0h8DESsFTkpLoca5JwGKBPneS_ZUuSRkx0CshLTRcg4qpGt3joqWXctRQp9MpFxpVrCo9SWE0QDAqb2B7u7AhFoH2iKa-r_D_jphXrW92KdnFsAc26ZPT5_orUanm24YL3zbrVZWFsrz4u8FIGLYy_Kfj5Fw
-//      "id": "cbc91a69-e02f-492f-bc1c-06e93f1517d8",
-//      "botUser.id": "d016caf4-21f3-4e85-a474-efbaff5ce4bb",
-//      "eyJraWQiOiJHYjM4OWEtOWY3Ni1nZGpzLWE5MmotMDI0MmJrOTQzNTYiLCJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJvcGVuLW1ldGFkYXRhLm9yZyIsInN1YiI6ImRhdGEtZW5naW5lLWJvdCIsInJvbGVzIjpbIkFwcGxpY2F0aW9uQm90Um9sZSIsIkluZ2VzdGlvbkJvdFJvbGUiLCJQcm9maWxlckJvdFJvbGUiLCJEYXRhQ29uc3VtZXIiXSwiZW1haWwiOiJkYXRhZW5naW5lQG1vYmlnZW4uY29tIiwiaXNCb3QiOnRydWUsInRva2VuVHlwZSI6IkJPVCIsImlhdCI6MTcyNjAzNjkzMCwiZXhwIjoxNzI2MDQwNTMwfQ.XA8uo22bEjtAKoz23DovZN4y6DKCkcHaM2n1eUE3im7Us0K5V4bQTko69-1qdCUV5Tq-y97fypZgC3TLr118VqC_zYMiVteZo-sdiMx78_yAISZwvc13IHzZz_wyZ5FEeInklsmGBHd22L0Y7LIn_8hcQFKWxx-iUeXq_Ap65ur84gKMkiqUMgpj-IwKLvA3QnClOYM__0bKA1mcWNfBj8aZiflqIWO9wXNa-mEgd_D2_KQzdzrIB0BuBFDFB6cvONnJoP1bbczEUi560qp3EIMVss_Dq_C6Aen2PKjxRAUEf27rSURQJRtaGwUbEMJOK7BPaBCZLmGfk4WULYIi1g",
     }
 
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
@@ -477,13 +478,13 @@ public class OpenMetadataRepository {
 
         // Add Lineage
         for (Map.Entry<String, String> entry : lineage.entrySet()) {
-            var from = getTable(entry.getKey(), OMTableEntity.class);
-            var to = getTable(entry.getValue(), OMTableEntity.class);
+            var from = getTableOrContainerWithType(entry.getKey());
+            var to = getTableOrContainerWithType(entry.getValue());
             if (from != null && to != null) {
                 AddLineage addLineage = new AddLineage().withEdge(
                         new EntitiesEdge()
-                                .withFromEntity(new EntityReference().withId(from.getId()).withType("table"))
-                                .withToEntity(new EntityReference().withId(to.getId()).withType("table"))
+                                .withFromEntity(new EntityReference().withId(from.left().getId()).withType(from.right()))
+                                .withToEntity(new EntityReference().withId(to.left().getId()).withType(to.right()))
                 );
                 response = getWebClient().put()
                         .uri("/v1/lineage")
@@ -492,6 +493,7 @@ public class OpenMetadataRepository {
                         .retrieve()
                         .bodyToMono(String.class)
                         .block();
+                log.info(response);
             }
         }
     }

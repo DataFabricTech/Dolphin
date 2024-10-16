@@ -97,13 +97,11 @@ public class ModelService {
                         + "." + createModelDto.getBaseModel().getTable();
             }
             lineage.put(fqn, dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel);
-            trinoRepository.execute(sql);
         } else if (createModelDto.getBaseModel().getType() == ModelType.MODEL) {
             sql = sql + " as select " + selectedColumns
                     + " from " + dolphinConfiguration.getModel().getCatalog()
                     + "." + dolphinConfiguration.getModel().getSchema().getDb()
                     + "." + createModelDto.getBaseModel().getModel();
-            trinoRepository.execute(sql);
         } else {
             var visitor = new SqlVisitor(null,
                     openMetadataRepository,
@@ -116,8 +114,8 @@ public class ModelService {
             for (var modelHistory : visitor.getUsedModelHistory()) {
                 lineage.put(modelHistory.getFullyQualifiedName(), dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel);
             }
-            trinoRepository.execute(sql);
         }
+        trinoRepository.execute(sql);
         // Get Model Data(Columns, Types) From Trino
         var resultDto = trinoRepository.executeQuery("select * from " + trinoModel, 50, 0, null, null);
         // Create Model Data(Columns, Types) From Trino

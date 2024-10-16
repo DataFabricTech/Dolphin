@@ -38,7 +38,7 @@ dolphin:
         non-managed-table-writes-enabled: true
       s3:
         streaming.part-size: 32MB
-        max-connections: 3
+        max-connections: 5000
         tcp-keep-alive: false
         path-style-access: true
 spring:
