@@ -56,10 +56,11 @@ public class ModelService {
                         .map(Functions::convertKeywordName)
                         .collect(Collectors.joining(", "))
                 : "*";
-        var trinoModel = dolphinConfiguration.getModel().getCatalog()
-                + "." + dolphinConfiguration.getModel().getSchema().getDb()
-                + ".\"" + createModelDto.getModelName().strip() + '"';
-        String sql = "create view " + trinoModel;
+        var trinoModelSchema = dolphinConfiguration.getModel().getCatalog()
+                + "." + dolphinConfiguration.getModel().getSchema().getDb();
+        var trinoModel = trinoModelSchema + "." + createModelDto.getModelName().strip();
+        var trinoModel4Sql = trinoModelSchema + ".\"" + createModelDto.getModelName().strip() + '"';
+        String sql = "create view " + trinoModel4Sql;
         // Map < FromFQN , ToFQN >  lineage
         Map<String, String> lineage = new HashMap<>();
 
@@ -115,7 +116,7 @@ public class ModelService {
         }
         trinoRepository.execute(sql);
         // Get Model Data(Columns, Types) From Trino
-        var resultDto = trinoRepository.executeQuery("select * from " + trinoModel, 50, 0, null, null);
+        var resultDto = trinoRepository.executeQuery("select * from " + trinoModel4Sql, 50, 0, null, null);
         // Create Model Data(Columns, Types) From Trino
         openMetadataRepository.createModel(createModelDto, lineage, resultDto);
 
