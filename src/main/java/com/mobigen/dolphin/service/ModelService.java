@@ -58,7 +58,7 @@ public class ModelService {
                 : "*";
         var trinoModel = dolphinConfiguration.getModel().getCatalog()
                 + "." + dolphinConfiguration.getModel().getSchema().getDb()
-                + ".\"" + createModelDto.getModelName() + '"';
+                + ".\"" + createModelDto.getModelName().strip() + '"';
         String sql = "create view " + trinoModel;
         // Map < FromFQN , ToFQN >  lineage
         Map<String, String> lineage = new HashMap<>();
