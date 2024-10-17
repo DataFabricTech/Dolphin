@@ -116,7 +116,7 @@ class QueryServiceTest {
                 .status(JobEntity.JobStatus.QUEUED)
                 .userQuery(input.getQuery())
                 .convertedQuery("select a.id as a_id, a.name as a_name" +
-                        " from internalhive.default.abc as a")
+                        " from internalhive.default.\"abc\" as a")
                 .build();
         assertEquals(expected, job);
     }
@@ -156,8 +156,8 @@ class QueryServiceTest {
                 .status(JobEntity.JobStatus.QUEUED)
                 .userQuery(input.getQuery())
                 .convertedQuery("select a.id as a_id, a.name as a_name, b.long, b.short" +
-                        " from internalhive.default.abc as a ," +
-                        " internalhive.default.bcd as b" +
+                        " from internalhive.default.\"abc\" as a ," +
+                        " internalhive.default.\"bcd\" as b" +
                         " on a.id = b.id")
                 .build();
         assertEquals(expected, job);
@@ -199,9 +199,9 @@ class QueryServiceTest {
                 .status(JobEntity.JobStatus.QUEUED)
                 .userQuery(input.getQuery())
                 .convertedQuery("select a.id, a.name" +
-                        " from internalhive.default.abc as a" +
+                        " from internalhive.default.\"abc\" as a" +
                         " union select b.id, b.name" +
-                        " from internalhive.default.bcd as b" +
+                        " from internalhive.default.\"bcd\" as b" +
                         " offset 3 limit 10")
                 .build();
         assertEquals(expected, job);
@@ -244,9 +244,9 @@ class QueryServiceTest {
                 .status(JobEntity.JobStatus.QUEUED)
                 .userQuery(input.getQuery())
                 .convertedQuery("select a.id, a.name" +
-                        " from " + getCatalogName(pair1.left().right()) + "." + pair1.right().get(1) + "." + pair1.right().get(3) + " as a" +
+                        " from " + getCatalogName(pair1.left().right()) + "." + pair1.right().get(2) + ".\"" + pair1.right().get(3) + "\" as a" +
                         " union select b.id, b.name" +
-                        " from " + getCatalogName(pair2.left().right()) + "." + pair2.right().get(1) + "." + pair2.right().get(3) + " as b"
+                        " from " + getCatalogName(pair2.left().right()) + "." + pair2.right().get(2) + ".\"" + pair2.right().get(3) + "\" as b"
                 )
                 .limit_(10)
                 .offset_(3)

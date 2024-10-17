@@ -393,6 +393,25 @@ public class OpenMetadataRepository {
         return response;
     }
 
+    @AssertTrue(message = "Fail to get user information from OpenMetadata")
+    public EntityReference getUser(String name) {
+        var webClient = getWebClient();
+        var response = webClient.get()
+                .uri("/v1/users/name/" + name)
+                .retrieve()
+                .bodyToMono(EntityReference.class)
+                .retry(0)
+                .block();
+        assert response != null;
+        response.setType("user");
+        log.info("{} name: {}, fqn: {}",
+                Objects.requireNonNull(response).getType(),
+                Objects.requireNonNull(response).getName(),
+                Objects.requireNonNull(response).getFullyQualifiedName());
+        return response;
+    }
+
+
     public void addLineageEdge(LineageEdgeEntity lineageEdgeEntity) throws JsonProcessingException {
         var webClient = getWebClient();
         var om = new ObjectMapper();
@@ -465,6 +484,9 @@ public class OpenMetadataRepository {
                 .withTableType(TableType.View);
         if (createModelDto.getBaseModel().getType() == ModelType.QUERY) {
             table.withSchemaDefinition(createModelDto.getBaseModel().getQuery());
+        }
+        if (createModelDto.getOwner() != null) {
+            table.withOwner(getUser(createModelDto.getOwner()));
         }
         // Create Table
         var response = getWebClient().put()

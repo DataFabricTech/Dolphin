@@ -32,6 +32,9 @@ public class CreateModelDto {
     @Schema(description = "DataModel Description", example = "This is test model(can use markdown format)")
     private String description;
 
+    @Schema(description = "DataModel owner", example = "user1")
+    private String owner;
+
     @Schema(description = "DataModel Tags:[FQN]", example = "[\"classification.apple\", \"classification.banana\"]")
     private List<String> tags;
 

@@ -17,5 +17,6 @@ import java.util.UUID;
 public class ModelDto {
     private UUID id;
     private String name;
+    private String owner;
     private String description;
 }

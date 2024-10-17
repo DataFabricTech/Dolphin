@@ -123,6 +123,7 @@ public class ModelService {
         // TODO : create model 의 응답도 변경해야 할?
         return ModelDto.builder()
                 .name(createModelDto.getModelName())
+                .owner(createModelDto.getOwner())
                 .description(createModelDto.getDescription())
                 .build();
     }
