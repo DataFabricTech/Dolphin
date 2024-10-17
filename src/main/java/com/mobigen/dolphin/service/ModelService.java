@@ -11,7 +11,6 @@ import com.mobigen.dolphin.entity.openmetadata.OMServiceEntity;
 import com.mobigen.dolphin.entity.openmetadata.OMTableEntity;
 import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
-import com.mobigen.dolphin.repository.local.ModelQueueRepository;
 import com.mobigen.dolphin.repository.openmetadata.OpenMetadataRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import com.mobigen.dolphin.util.Functions;
@@ -46,7 +45,6 @@ public class ModelService {
     private final DolphinConfiguration dolphinConfiguration;
     private final OpenMetadataRepository openMetadataRepository;
     private final FusionModelRepository fusionModelRepository;
-    private final ModelQueueRepository modelQueueRepository;
 
     public List<ModelDto> getModels() {
         return trinoRepository.getModelList();
@@ -60,7 +58,7 @@ public class ModelService {
                 : "*";
         var trinoModel = dolphinConfiguration.getModel().getCatalog()
                 + "." + dolphinConfiguration.getModel().getSchema().getDb()
-                + "." + createModelDto.getModelName();
+                + ".\"" + createModelDto.getModelName() + '"';
         String sql = "create view " + trinoModel;
         // Map < FromFQN , ToFQN >  lineage
         Map<String, String> lineage = new HashMap<>();
