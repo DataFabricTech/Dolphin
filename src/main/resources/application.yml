@@ -35,12 +35,15 @@ dolphin:
     uri: thrift://${HIVE_HOST:hive-metastore-svc}:${HIVE_PORT:9083}
     options:
       hive:
-        non-managed-table-writes-enabled: true
-      s3:
-        streaming.part-size: 32MB
-        max-connections: 3
-        tcp-keep-alive: false
-        path-style-access: true
+        s3:
+          max-error-retries: 2
+          max-client-retries: 2
+          max-backoff-time: 30s
+          max-retry-time: 30s
+          connect-timeout: 5s
+          streaming.part-size: 32MB
+          max-connections: 1000
+          path-style-access: true
 spring:
   application:
     name: Dolphin

@@ -237,10 +237,15 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
                 return expr + " as " + visitColumn_alias(ctx.column_alias());
             }
             return expr;
-        } else if (ctx.STAR() != null) {
+        } else if (ctx.model_term() == null && ctx.STAR() != null) {
             return "*";
         } else {
-            return visitModel_term(ctx.model_term()) + "." + ctx.STAR();
+            var alias = convertKeywordName(ctx.model_term().getText());
+            if (modelAliases.contains(alias)) {
+                return alias + "." + ctx.STAR();
+            } else {
+                return visitModel_term(ctx.model_term()) + "." + ctx.STAR();
+            }
         }
     }
 

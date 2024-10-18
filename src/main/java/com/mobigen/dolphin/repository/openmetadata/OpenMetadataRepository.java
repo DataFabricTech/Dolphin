@@ -14,6 +14,7 @@ import com.mobigen.dolphin.util.Pair;
 import jakarta.validation.constraints.AssertTrue;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.openmetadata.schema.api.data.CreateQuery;
 import org.openmetadata.schema.api.data.CreateTable;
 import org.openmetadata.schema.api.lineage.AddLineage;
 import org.openmetadata.schema.type.*;
@@ -27,6 +28,7 @@ import org.springframework.web.util.UriBuilder;
 
 import java.net.URI;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -498,24 +500,51 @@ public class OpenMetadataRepository {
                 .block();
         log.info(response);
 
-        // Add Lineage
-        for (Map.Entry<String, String> entry : lineage.entrySet()) {
-            var from = getTableOrContainerWithType(entry.getKey());
-            var to = getTableOrContainerWithType(entry.getValue());
-            if (from != null && to != null) {
-                AddLineage addLineage = new AddLineage().withEdge(
-                        new EntitiesEdge()
-                                .withFromEntity(new EntityReference().withId(from.left().getId()).withType(from.right()))
-                                .withToEntity(new EntityReference().withId(to.left().getId()).withType(to.right()))
-                );
-                response = getWebClient().put()
-                        .uri("/v1/lineage")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromValue(addLineage))
-                        .retrieve()
-                        .bodyToMono(String.class)
-                        .block();
-                log.info(response);
+        if (!lineage.isEmpty()) {
+            try {
+                // Add Lineage
+                List<Pair<OMTableEntity, String>> usedModels = new ArrayList<>();
+                var to = getTableOrContainerWithType(lineage.get(lineage.keySet().iterator().next()));
+                usedModels.add(to);
+                for (Map.Entry<String, String> entry : lineage.entrySet()) {
+                    var from = getTableOrContainerWithType(entry.getKey());
+                    usedModels.add(from);
+                    AddLineage addLineage = new AddLineage().withEdge(
+                            new EntitiesEdge()
+                                    .withFromEntity(new EntityReference().withId(from.left().getId()).withType(from.right()))
+                                    .withToEntity(new EntityReference().withId(to.left().getId()).withType(to.right()))
+                    );
+                    response = getWebClient().put()
+                            .uri("/v1/lineage")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(BodyInserters.fromValue(addLineage))
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .block();
+                    log.info(response);
+                }
+                // Add Query
+                if (createModelDto.getBaseModel().getType().equals(ModelType.QUERY)) {
+                    response = getWebClient().put()
+                            .uri("/v1/queries")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .body(BodyInserters.fromValue(new CreateQuery()
+                                    .withQuery("/* Created model (" + createModelDto.getModelName() + ") by */\n"
+                                            + createModelDto.getBaseModel().getQuery())
+                                    .withQueryDate(Instant.now().toEpochMilli())
+                                    .withOwner(table.getOwner())
+                                    .withService(usedModels.getFirst().left().getService().getName())
+                                    .withQueryUsedIn(usedModels.stream().map(model -> new EntityReference()
+                                            .withId(model.left().getId())
+                                            .withType(model.right())).toList())
+                            ))
+                            .retrieve()
+                            .bodyToMono(String.class)
+                            .block();
+                    log.info(response);
+                }
+            } catch (Exception e) {
+                log.warn(e.getMessage());
             }
         }
     }
