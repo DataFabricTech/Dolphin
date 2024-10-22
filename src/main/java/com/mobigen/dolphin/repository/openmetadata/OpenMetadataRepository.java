@@ -505,7 +505,6 @@ public class OpenMetadataRepository {
                 // Add Lineage
                 List<Pair<OMTableEntity, String>> usedModels = new ArrayList<>();
                 var to = getTableOrContainerWithType(lineage.get(lineage.keySet().iterator().next()));
-                usedModels.add(to);
                 for (Map.Entry<String, String> entry : lineage.entrySet()) {
                     var from = getTableOrContainerWithType(entry.getKey());
                     usedModels.add(from);
@@ -533,7 +532,7 @@ public class OpenMetadataRepository {
                                             + createModelDto.getBaseModel().getQuery())
                                     .withQueryDate(Instant.now().toEpochMilli())
                                     .withOwner(table.getOwner())
-                                    .withService(usedModels.getFirst().left().getService().getName())
+                                    .withService(to.left().getService().getName())
                                     .withQueryUsedIn(usedModels.stream().map(model -> new EntityReference()
                                             .withId(model.left().getId())
                                             .withType(model.right())).toList())

@@ -10,16 +10,8 @@ import lombok.Getter;
  * @since 0.0.1
  */
 @Getter
-public class SqlParseException extends RuntimeException {
-    private final ErrorCode errorCode;
-    private final String message;
-
+public class SqlParseException extends DolphinException {
     public SqlParseException(ErrorCode errorCode, String msg) {
-        this.errorCode = errorCode;
-        this.message = msg;
-    }
-
-    public String getMessage() {
-        return errorCode.getMessage() + ": " + message;
+        super(errorCode, msg);
     }
 }

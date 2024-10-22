@@ -4,10 +4,13 @@ import com.mobigen.dolphin.dto.response.MessageDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.regex.Pattern;
 
 /**
  * <p>
@@ -19,6 +22,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(UncategorizedSQLException.class)
+    protected ResponseEntity<MessageDto> handleUncategorizedSQLException(UncategorizedSQLException e) {
+        var message = e.getSQLException().getCause().getMessage();
+        log.error(message, e);
+        ErrorCode errorCode;
+        if (Pattern.matches(".+\\sColumn name '.+' specified more than once", message)) {
+            errorCode = ErrorCode.INVALID_SQL_DUPLICATED_COLUMNS;
+        } else {
+            errorCode = ErrorCode.INVALID_SQL;
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new MessageDto(errorCode.getStatus(), errorCode.getMessage() + e.getSQLException().getCause().getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     protected ResponseEntity<MessageDto> handleMethodArgumentNotValidException(MethodArgumentNotValidException e) {
         var message = new StringBuilder();
@@ -30,13 +47,13 @@ public class GlobalExceptionHandler {
                     .append("\n");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new MessageDto(HttpStatus.BAD_REQUEST.value(), message.toString()));
+                .body(new MessageDto(ErrorCode.VALIDATION_ERROR.getStatus(), ErrorCode.VALIDATION_ERROR.getMessage() + message));
     }
 
-    @ExceptionHandler(SqlParseException.class)
-    protected ResponseEntity<?> handleSqlParseException(SqlParseException e) {
+    @ExceptionHandler(DolphinException.class)
+    protected ResponseEntity<?> handleDolphinException(DolphinException e) {
         log.error(e.getMessage(), e);
-        return ResponseEntity.status(e.getErrorCode().getStatus())
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(new MessageDto(e.getErrorCode().getStatus(), e.getMessage()));
     }
 
@@ -44,6 +61,6 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<?> handleException(Exception e) {
         log.error(e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new MessageDto(HttpStatus.INTERNAL_SERVER_ERROR.value(), "처리 하지 못 한 내부 에러가 발생 했습니다. " + e.getMessage()));
+                .body(new MessageDto(ErrorCode.INTERNAL_ERROR.getStatus(), ErrorCode.INTERNAL_ERROR.getMessage() + e.getMessage()));
     }
 }

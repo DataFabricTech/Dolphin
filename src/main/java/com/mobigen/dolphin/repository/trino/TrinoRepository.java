@@ -3,14 +3,11 @@ package com.mobigen.dolphin.repository.trino;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.response.ModelDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
-import com.mobigen.dolphin.exception.ErrorCode;
-import com.mobigen.dolphin.exception.SqlParseException;
 import com.mobigen.dolphin.repository.trino.extractor.ExtractType;
 import com.mobigen.dolphin.repository.trino.extractor.ResultSetExtractorFactory;
 import com.mobigen.dolphin.util.Functions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.UncategorizedSQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -18,7 +15,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -85,48 +81,40 @@ public class TrinoRepository {
         // get model data
         List<QueryResultDto.Column> columns = new ArrayList<>();
         List<String> columnNames = new ArrayList<>();
-        try {
-            var startTime = LocalDateTime.now();
-            var rows = trinoJdbcTemplate.query(sql, ((rs, rowNum) -> {
-                var rsmd = rs.getMetaData();
-                int numberOfColumns = rsmd.getColumnCount();
-                if (rowNum == 0) {
-                    for (int i = 1; i <= numberOfColumns; i++) {
-                        var name = rsmd.getColumnName(i);
-                        columns.add(QueryResultDto.Column.builder()
-                                .name(name)
-                                .dataType(Functions.getDolphinType(rsmd.getColumnType(i)))
-                                .build());
-                        columnNames.add(name);
-                    }
-                }
-                List<Object> row = new ArrayList<>();
+        var startTime = LocalDateTime.now();
+        var rows = trinoJdbcTemplate.query(sql, ((rs, rowNum) -> {
+            var rsmd = rs.getMetaData();
+            int numberOfColumns = rsmd.getColumnCount();
+            if (rowNum == 0) {
                 for (int i = 1; i <= numberOfColumns; i++) {
-                    row.add(rs.getObject(i));
+                    var name = rsmd.getColumnName(i);
+                    columns.add(QueryResultDto.Column.builder()
+                            .name(name)
+                            .dataType(Functions.getDolphinType(rsmd.getColumnType(i)))
+                            .build());
+                    columnNames.add(name);
                 }
-                return row;
-            }));
-            var endTime = LocalDateTime.now();
-            log.info("End of executing {}, elapsed(ms): {}", sql, Duration.between(startTime, endTime));
-            return QueryResultDto.builder()
-                    .columns(columns)
-                    .resultData(QueryResultDto.ResultData.builder()
-                            .columns(columnNames)
-                            .rows(rows)
-                            .build())
-                    .totalRows(totalRows)
-                    .totalPages(totalPages)
-                    .page(page)
-                    .startedTime(startTime)
-                    .finishedTime(endTime)
-                    .build();
-        } catch (UncategorizedSQLException e) {
-            log.error(e.getMessage(), e);
-            throw new SqlParseException(ErrorCode.INVALID_SQL, Objects.requireNonNull(e.getSQLException()).getCause().getMessage());
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new SqlParseException(ErrorCode.INVALID_SQL, e.getMessage());
-        }
+            }
+            List<Object> row = new ArrayList<>();
+            for (int i = 1; i <= numberOfColumns; i++) {
+                row.add(rs.getObject(i));
+            }
+            return row;
+        }));
+        var endTime = LocalDateTime.now();
+        log.info("End of executing {}, elapsed(ms): {}", sql, Duration.between(startTime, endTime));
+        return QueryResultDto.builder()
+                .columns(columns)
+                .resultData(QueryResultDto.ResultData.builder()
+                        .columns(columnNames)
+                        .rows(rows)
+                        .build())
+                .totalRows(totalRows)
+                .totalPages(totalPages)
+                .page(page)
+                .startedTime(startTime)
+                .finishedTime(endTime)
+                .build();
     }
 
 

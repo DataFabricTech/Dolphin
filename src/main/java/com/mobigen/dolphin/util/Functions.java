@@ -2,6 +2,7 @@ package com.mobigen.dolphin.util;
 
 import com.mobigen.dolphin.antlr.ModelSqlLexer;
 import com.mobigen.dolphin.antlr.ModelSqlParser;
+import com.mobigen.dolphin.antlr.SqlErrorListener;
 import com.mobigen.dolphin.antlr.SqlVisitor;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -67,6 +68,8 @@ public class Functions {
         var lexer = new ModelSqlLexer(CharStreams.fromString(sql));
         var tokens = new CommonTokenStream(lexer);
         var parser = new ModelSqlParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(SqlErrorListener.INSTANCE);
         return parser.parse();
     }
 
