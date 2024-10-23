@@ -6,7 +6,8 @@ import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.ExecuteDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
 import com.mobigen.dolphin.entity.local.JobEntity;
-import com.mobigen.dolphin.exception.SqlParseException;
+import com.mobigen.dolphin.exception.DolphinException;
+import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.repository.MixRepository;
 import com.mobigen.dolphin.repository.local.FusionModelRepository;
 import com.mobigen.dolphin.repository.local.JobRepository;
@@ -95,10 +96,10 @@ public class QueryService {
             job.setStatus(JobEntity.JobStatus.FINISHED);
             jobRepository.save(job);
             return result;
-        } catch (SqlParseException e) {
+        } catch (Exception e) {
             job.setStatus(JobEntity.JobStatus.FAILED);
             jobRepository.save(job);
-            throw e;
+            throw new DolphinException(ErrorCode.EXECUTION_FAILED, e.getMessage());
         }
     }
 

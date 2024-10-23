@@ -12,6 +12,7 @@ dependencies {
     implementation(Dependencies.Spring.STARTER_WEB)
     implementation(Dependencies.Spring.JPA)
     implementation(Dependencies.Spring.VALIDATION)
+    implementation(Dependencies.Spring.AOP)
 
     testImplementation(Dependencies.Spring.TEST)
 }

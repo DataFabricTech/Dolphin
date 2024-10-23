@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mobigen.dolphin.aop.CheckOpenMetadata;
+import com.mobigen.dolphin.aop.WriteAroundLogging;
 import com.mobigen.dolphin.config.DolphinConfiguration;
 import com.mobigen.dolphin.dto.request.CreateModelDto;
 import com.mobigen.dolphin.dto.response.QueryResultDto;
@@ -296,6 +298,8 @@ public class OpenMetadataRepository {
         }
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     @AssertTrue(message = "Fail to get databaseService information from OpenMetadata")
     public OMServiceEntity getConnectorInfo(UUID id, EntityType entityType) {
         String urn;
@@ -314,6 +318,8 @@ public class OpenMetadataRepository {
         return response;
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     @AssertTrue(message = "Fail to get databaseService information from OpenMetadata")
     public OMServiceEntity getConnectorInfo(String fqn, EntityType entityType) {
         String urn;
@@ -332,6 +338,8 @@ public class OpenMetadataRepository {
         return response;
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
     public OMTableEntity getTable(UUID id) {
         var webClient = getWebClient();
@@ -346,6 +354,8 @@ public class OpenMetadataRepository {
         return response;
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
     public OMTableEntity getTableOrContainer(String fullyQualifiedName) {
         return getTableOrContainerWithType(fullyQualifiedName).left();
@@ -365,6 +375,8 @@ public class OpenMetadataRepository {
         }
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     @AssertTrue(message = "Fail to get table information from OpenMetadata")
     public OMBaseEntity getTable(String fullyQualifiedName, Class<? extends OMBaseEntity> outputClazz) {
         var webClient = getWebClient();
@@ -380,6 +392,8 @@ public class OpenMetadataRepository {
         return response;
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     @AssertTrue(message = "Fail to get container information from OpenMetadata")
     public OMBaseEntity getContainer(String fullyQualifiedName, Class<? extends OMBaseEntity> outputClazz) {
         var webClient = getWebClient();
@@ -395,6 +409,8 @@ public class OpenMetadataRepository {
         return response;
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     @AssertTrue(message = "Fail to get user information from OpenMetadata")
     public EntityReference getUser(String name) {
         var webClient = getWebClient();
@@ -414,6 +430,8 @@ public class OpenMetadataRepository {
     }
 
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     public void addLineageEdge(LineageEdgeEntity lineageEdgeEntity) throws JsonProcessingException {
         var webClient = getWebClient();
         var om = new ObjectMapper();
@@ -436,6 +454,8 @@ public class OpenMetadataRepository {
         }
     }
 
+    @CheckOpenMetadata
+    @WriteAroundLogging
     public void callIngestion(String ingestionId) {
         log.info("Call ingestion id: {}", ingestionId);
         var webClient = getWebClient();

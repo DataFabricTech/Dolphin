@@ -39,6 +39,7 @@ object Dependencies {
         const val STARTER_WEB = "org.springframework.boot:spring-boot-starter-web:${Versions.SPRING_BOOT_VER}"
         const val JPA = "org.springframework.boot:spring-boot-starter-data-jpa:${Versions.SPRING_BOOT_VER}"
         const val VALIDATION = "org.springframework.boot:spring-boot-starter-validation:${Versions.SPRING_BOOT_VER}"
+        const val AOP = "org.springframework.boot:spring-boot-starter-aop:${Versions.SPRING_BOOT_VER}"
         const val TEST = "org.springframework.boot:spring-boot-starter-test:${Versions.SPRING_BOOT_VER}"
     }
 

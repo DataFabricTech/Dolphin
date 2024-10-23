@@ -1,6 +1,8 @@
 package com.mobigen.dolphin.service;
 
 import com.mobigen.dolphin.entity.local.JobEntity;
+import com.mobigen.dolphin.exception.DolphinException;
+import com.mobigen.dolphin.exception.ErrorCode;
 import com.mobigen.dolphin.repository.local.JobRepository;
 import com.mobigen.dolphin.repository.trino.TrinoRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +29,15 @@ public class AsyncService {
         log.info("Run async job {}", jobEntity.getId());
         jobEntity.setStatus(JobEntity.JobStatus.RUNNING);
         jobRepository.save(jobEntity);
-        var result = trinoRepository.asyncExecuteQuery(jobEntity.getId(), jobEntity.getConvertedQuery());
-        jobEntity.setResultPath(result);
-        jobEntity.setStatus(JobEntity.JobStatus.FINISHED);
-        jobRepository.save(jobEntity);
+        try {
+            var result = trinoRepository.asyncExecuteQuery(jobEntity.getId(), jobEntity.getConvertedQuery());
+            jobEntity.setResultPath(result);
+            jobEntity.setStatus(JobEntity.JobStatus.FINISHED);
+            jobRepository.save(jobEntity);
+        } catch (Exception e) {
+            jobEntity.setStatus(JobEntity.JobStatus.FAILED);
+            jobRepository.save(jobEntity);
+            throw new DolphinException(ErrorCode.EXECUTION_FAILED, e.getMessage());
+        }
     }
 }
