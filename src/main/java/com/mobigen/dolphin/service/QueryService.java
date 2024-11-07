@@ -80,7 +80,6 @@ public class QueryService {
             }
         }
         jobRepository.save(job);
-        fusionModelRepository.saveAll(visitor.getUsedModelHistory());
         return job;
     }
 

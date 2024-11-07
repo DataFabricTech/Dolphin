@@ -113,6 +113,7 @@ public class ModelService {
             for (var modelHistory : visitor.getUsedModelHistory()) {
                 lineage.put(modelHistory.getFullyQualifiedName(), dolphinConfiguration.getModel().getOmTrinoDatabaseService() + "." + trinoModel);
             }
+            fusionModelRepository.saveAll(visitor.getUsedModelHistory());
         }
         trinoRepository.execute(sql);
         // Get Model Data(Columns, Types) From Trino
