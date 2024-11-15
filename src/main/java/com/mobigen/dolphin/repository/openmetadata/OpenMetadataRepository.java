@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openmetadata.schema.api.data.CreateQuery;
 import org.openmetadata.schema.api.data.CreateTable;
 import org.openmetadata.schema.api.lineage.AddLineage;
+import org.openmetadata.schema.entity.data.Table;
 import org.openmetadata.schema.type.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
 public class OpenMetadataRepository {
     private final DolphinConfiguration dolphinConfiguration;
     private static final String DATA_ENGINE_BOT_NAME = "ingestion-bot";
+    private final ObjectMapper objectMapper;
     private String token;
     private String botID;
 
@@ -519,6 +521,19 @@ public class OpenMetadataRepository {
                 .bodyToMono(String.class)
                 .block();
         log.info(response);
+
+        Table resTable = objectMapper.convertValue(response, Table.class);
+
+        // Add SampleData
+        TableData sample = new TableData()
+                .withColumns(resultDto.getColumns().stream().map(QueryResultDto.Column::getName).toList())
+                .withRows(resultDto.getResultData().getRows());
+        getWebClient().put().uri(String.format("/v1/tables/%s/sampleData", resTable.getId()))
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(BodyInserters.fromValue(sample))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
 
         if (!lineage.isEmpty()) {
             try {
