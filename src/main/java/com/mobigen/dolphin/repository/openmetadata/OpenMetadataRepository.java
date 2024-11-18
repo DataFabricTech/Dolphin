@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openmetadata.schema.api.data.CreateQuery;
 import org.openmetadata.schema.api.data.CreateTable;
 import org.openmetadata.schema.api.lineage.AddLineage;
+import org.openmetadata.schema.entity.data.Table;
 import org.openmetadata.schema.type.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -48,6 +49,7 @@ import java.util.stream.Collectors;
 public class OpenMetadataRepository {
     private final DolphinConfiguration dolphinConfiguration;
     private static final String DATA_ENGINE_BOT_NAME = "ingestion-bot";
+    private final ObjectMapper objectMapper;
     private String token;
     private String botID;
 
@@ -520,6 +522,19 @@ public class OpenMetadataRepository {
                 .block();
         log.info(response);
 
+        Table resTable = objectMapper.convertValue(response, Table.class);
+
+        // Add SampleData
+        TableData sampleData = new TableData()
+                .withColumns(resultDto.getColumns().stream().map(QueryResultDto.Column::getName).toList())
+                .withRows(getRandomSublist(resultDto.getResultData().getRows(), 100));
+        getWebClient().put().uri(String.format("/v1/tables/%s/sampleData", resTable.getId()))
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(BodyInserters.fromValue(sampleData))
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
         if (!lineage.isEmpty()) {
             try {
                 // Add Lineage
@@ -566,5 +581,15 @@ public class OpenMetadataRepository {
                 log.warn(e.getMessage());
             }
         }
+    }
+    public static List<List<Object>> getRandomSublist(List<List<Object>> originalList, int maxSize) {
+        var size = Math.min(maxSize, originalList.size());
+
+        // 원본 리스트를 복사하고 무작위로 섞기
+        List<List<Object>> shuffledList = new ArrayList<>(originalList);
+        Collections.shuffle(shuffledList);
+
+        // 무작위 리스트에서 maxSize 만큼 추출
+        return shuffledList.subList(0, size);
     }
 }
