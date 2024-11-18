@@ -525,12 +525,12 @@ public class OpenMetadataRepository {
         Table resTable = objectMapper.convertValue(response, Table.class);
 
         // Add SampleData
-        TableData sample = new TableData()
+        TableData sampleData = new TableData()
                 .withColumns(resultDto.getColumns().stream().map(QueryResultDto.Column::getName).toList())
-                .withRows(resultDto.getResultData().getRows());
+                .withRows(getRandomSublist(resultDto.getResultData().getRows(), 100));
         getWebClient().put().uri(String.format("/v1/tables/%s/sampleData", resTable.getId()))
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(BodyInserters.fromValue(sample))
+                .body(BodyInserters.fromValue(sampleData))
                 .retrieve()
                 .bodyToMono(String.class)
                 .block();
@@ -581,5 +581,15 @@ public class OpenMetadataRepository {
                 log.warn(e.getMessage());
             }
         }
+    }
+    public static List<List<Object>> getRandomSublist(List<List<Object>> originalList, int maxSize) {
+        var size = Math.min(maxSize, originalList.size());
+
+        // 원본 리스트를 복사하고 무작위로 섞기
+        List<List<Object>> shuffledList = new ArrayList<>(originalList);
+        Collections.shuffle(shuffledList);
+
+        // 무작위 리스트에서 maxSize 만큼 추출
+        return shuffledList.subList(0, size);
     }
 }
