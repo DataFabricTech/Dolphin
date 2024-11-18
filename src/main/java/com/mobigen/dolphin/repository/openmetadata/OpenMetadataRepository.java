@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.openmetadata.schema.api.data.CreateQuery;
 import org.openmetadata.schema.api.data.CreateTable;
 import org.openmetadata.schema.api.lineage.AddLineage;
-import org.openmetadata.schema.entity.data.Table;
 import org.openmetadata.schema.type.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -513,27 +512,30 @@ public class OpenMetadataRepository {
             table.withOwner(getUser(createModelDto.getOwner()));
         }
         // Create Table
-        var response = getWebClient().put()
+        var createdTableByOM = getWebClient().put()
                 .uri("/v1/tables")
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .body(BodyInserters.fromValue(table))
                 .retrieve()
-                .bodyToMono(String.class)
+                .bodyToMono(OMTableEntity.class)
                 .block();
-        log.info(response);
+        log.info(createdTableByOM != null ? createdTableByOM.toString() : null);
 
-        Table resTable = objectMapper.convertValue(response, Table.class);
 
-        // Add SampleData
-        TableData sampleData = new TableData()
-                .withColumns(resultDto.getColumns().stream().map(QueryResultDto.Column::getName).toList())
-                .withRows(getRandomSublist(resultDto.getResultData().getRows(), 100));
-        getWebClient().put().uri(String.format("/v1/tables/%s/sampleData", resTable.getId()))
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .body(BodyInserters.fromValue(sampleData))
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        try {
+            // Add SampleData
+            TableData sampleData = new TableData()
+                    .withColumns(resultDto.getColumns().stream().map(QueryResultDto.Column::getName).toList())
+                    .withRows(getRandomSublist(resultDto.getResultData().getRows(), 100));
+            getWebClient().put().uri(String.format("/v1/tables/%s/sampleData", createdTableByOM.getId()))
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(BodyInserters.fromValue(sampleData))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } catch (Exception e) {
+            log.warn(e.getMessage());
+        }
 
         if (!lineage.isEmpty()) {
             try {
@@ -548,7 +550,7 @@ public class OpenMetadataRepository {
                                     .withFromEntity(new EntityReference().withId(from.left().getId()).withType(from.right()))
                                     .withToEntity(new EntityReference().withId(to.left().getId()).withType(to.right()))
                     );
-                    response = getWebClient().put()
+                    var response = getWebClient().put()
                             .uri("/v1/lineage")
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(BodyInserters.fromValue(addLineage))
@@ -559,7 +561,7 @@ public class OpenMetadataRepository {
                 }
                 // Add Query
                 if (createModelDto.getBaseModel().getType().equals(ModelType.QUERY)) {
-                    response = getWebClient().put()
+                    var response = getWebClient().put()
                             .uri("/v1/queries")
                             .contentType(MediaType.APPLICATION_JSON)
                             .body(BodyInserters.fromValue(new CreateQuery()
@@ -582,6 +584,7 @@ public class OpenMetadataRepository {
             }
         }
     }
+
     public static List<List<Object>> getRandomSublist(List<List<Object>> originalList, int maxSize) {
         var size = Math.min(maxSize, originalList.size());
 
