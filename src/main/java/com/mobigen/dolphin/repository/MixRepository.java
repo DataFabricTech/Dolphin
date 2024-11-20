@@ -88,7 +88,7 @@ public class MixRepository {
                     }
                     case "oracle" -> {
                         // service_name 만 지원중
-                        jdbcUrl = "jdbc:oracle:thin:@//" + connInfo.getHostPort() + "/" + connInfo.getOracleConnectionType().getOracleServerName();
+                        jdbcUrl = "jdbc:oracle:thin:@//" + connInfo.getHostPort() + "/" + connInfo.getOracleConnectionType().getOracleServiceName();
                         password = connInfo.getPassword();
                     }
                     case "mariadb" -> {

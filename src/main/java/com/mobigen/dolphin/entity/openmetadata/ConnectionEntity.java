@@ -59,7 +59,7 @@ public class ConnectionEntity {
     @Data
     public static class OracleConnectionTypeEntity {
         private String databaseSchema;
-        private String oracleServerName;
+        private String oracleServiceName;
         private String oracleTNSConnection;
     }
 }
