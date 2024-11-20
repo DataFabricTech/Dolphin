@@ -15,6 +15,7 @@ dolphin:
     hibernate:
       property:
         "[hibernate.hbm2ddl.auto]": ${DB_DDL_AUTO:update}
+        "[hibernate.dialect]": org.hibernate.dialect.PostgreSQLDialect
   trino:
     datasource:
       hikari:

@@ -78,26 +78,39 @@ public class MixRepository {
                 var username = connInfo.getUsername();
                 String dbms;
                 String password;
-                if ("postgres".equalsIgnoreCase(omServiceEntity.getServiceType())) {
-                    dbms = "postgresql";
-                    password = connInfo.getAuthType().getPassword();
-                } else {
-                    dbms = omServiceEntity.getServiceType().toLowerCase();
-                    password = connInfo.getPassword();
-                    if (password == null) {
+                dbms = omServiceEntity.getServiceType().toLowerCase();
+                // 각 저장소 마다 연결 방식이 다름
+                String jdbcUrl;
+                switch (dbms) {
+                    case "postgres" -> {
+                        jdbcUrl = "jdbc:postgresql://" + connInfo.getHostPort() + "/" + connInfo.getDatabase();
                         password = connInfo.getAuthType().getPassword();
                     }
+                    case "oracle" -> {
+                        // service_name 만 지원중
+                        jdbcUrl = "jdbc:oracle:thin:@//" + connInfo.getHostPort() + "/" + connInfo.getOracleConnectionType().getOracleServerName();
+                        password = connInfo.getPassword();
+                    }
+                    case "mariadb" -> {
+                        jdbcUrl = "jdbc:mariadb://" + connInfo.getHostPort();
+                        password = connInfo.getPassword();
+                    }
+                    case "mysql" -> {
+                        jdbcUrl = "jdbc:mysql://" + connInfo.getHostPort();
+                        password = connInfo.getAuthType().getPassword();
+                    }
+                    default -> {
+                        jdbcUrl = "jdbc:" + dbms + "://" + connInfo.getHostPort();
+                        password = connInfo.getPassword();
+                        if (password == null) {
+                            password = connInfo.getAuthType().getPassword();
+                        }
+                    }
                 }
-                var jdbcURL = "jdbc:" + dbms + "://" + connInfo.getHostPort();
-                if (!List.of("mariadb", "mysql").contains(dbms)  // mariadb/mysql 의 경우 trino 에서 jdbc-url 에 db 세팅을 하지 않도록 되어 있어서 제외
-                        && connInfo.getDatabase() != null && !connInfo.getDatabase().isEmpty()) {
-                    jdbcURL = jdbcURL + "/" + connInfo.getDatabase();
-                }
-
                 createQuery = createQuery
                         + " using " + dbms
                         + " with ("
-                        + " \"connection-url\" = '" + jdbcURL + "', "
+                        + " \"connection-url\" = '" + jdbcUrl + "', "
                         + " \"connection-user\" = '" + username + "', "
                         + " \"connection-password\" = '" + password + "', "
                         + " \"case-insensitive-name-matching\" = 'true')";

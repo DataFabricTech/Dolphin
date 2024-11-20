@@ -28,6 +28,7 @@ public class ConnectionEntity {
         private AwsConfigEntity awsConfig;
         private MinIOConfigEntity minioConfig;
         private List<String> bucketNames;
+        private OracleConnectionTypeEntity oracleConnectionType;
         private Boolean supportsMetadataExtraction;
         private Boolean supportsDBTExtraction;
         private Boolean supportsProfiler;
@@ -53,5 +54,12 @@ public class ConnectionEntity {
         private String accessKeyId;
         private String secretKey;
         private String endPointURL;
+    }
+
+    @Data
+    public static class OracleConnectionTypeEntity {
+        private String databaseSchema;
+        private String oracleServerName;
+        private String oracleTNSConnection;
     }
 }
