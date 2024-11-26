@@ -405,6 +405,18 @@ public class SqlVisitor extends ModelSqlBaseVisitor<String> {
         return convertKeywordName(ctx.getText());
     }
 
+    @Override
+    public String visitInterval_term(ModelSqlParser.Interval_termContext ctx) {
+        return ctx.children.stream().map(x -> x.accept(this))
+                .collect(Collectors.joining(" "));
+    }
+
+    @Override
+    public String visitTime_term(ModelSqlParser.Time_termContext ctx) {
+        return ctx.children.stream().map(x -> x.accept(this))
+                .collect(Collectors.joining(" "));
+    }
+
     private String combineKeywordsAndPad(String... keywords) {
         return " " + String.join(" ", keywords) + " ";
     }
