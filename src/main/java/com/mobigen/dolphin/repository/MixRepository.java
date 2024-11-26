@@ -83,6 +83,7 @@ public class MixRepository {
                 String jdbcUrl;
                 switch (dbms) {
                     case "postgres" -> {
+                        dbms = "postgresql";
                         jdbcUrl = "jdbc:postgresql://" + connInfo.getHostPort() + "/" + connInfo.getDatabase();
                         password = connInfo.getAuthType().getPassword();
                     }
