@@ -34,9 +34,9 @@ public class JobEntity {
     private UUID id;
     @Enumerated(value = EnumType.STRING)
     private JobStatus status;
-    @Column(name = "user_query")
+    @Column(name = "user_query", length = 4096)
     private String userQuery;
-    @Column(name = "converted_query", length = 2048)
+    @Column(name = "converted_query", length = 4096)
     private String convertedQuery;
     @Column
     private Integer offset_;
