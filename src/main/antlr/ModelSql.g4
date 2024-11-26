@@ -96,6 +96,8 @@ expr
 | BIND_PARAMETER
 | function_name OPEN_PAR function_arguments CLOSE_PAR
 | column_term
+| interval_term
+| time_term
 | unary_operator expr
 | expr PIPE2 expr
 | expr (STAR | DIV | MOD) expr
@@ -170,6 +172,21 @@ join_constraint
 | K_USING OPEN_PAR column_name (COMMA column_name)* CLOSE_PAR
 ;
 
+interval_term
+: K_INTERVAL STRING_LITERAL ( K_YEAR
+                            | K_MONTH
+                            | K_DAY
+                            | K_HOUR
+                            | K_MINUTE
+                            | K_SECOND
+                            | K_MILLISECOND
+)
+;
+
+time_term
+: (K_DATE | K_TIME | K_TIMESTAMP) STRING_LITERAL
+;
+
 keyword  // https://sqlite.org/lang_keywords.html
 : K_ABORT
 //| K_ACTION
@@ -202,6 +219,8 @@ keyword  // https://sqlite.org/lang_keywords.html
 | K_CURRENT_TIME
 | K_CURRENT_TIMESTAMP
 //| K_DATABASE
+| K_DATE
+| K_DAY
 | K_DEFAULT
 //| K_DEFERRABLE
 //| K_DEFERRED
@@ -231,6 +250,7 @@ keyword  // https://sqlite.org/lang_keywords.html
 | K_GLOB
 | K_GROUP
 | K_HAVING
+| K_HOUR
 //| K_IF
 | K_IGNORE
 //| K_IMMEDIATE
@@ -242,6 +262,7 @@ keyword  // https://sqlite.org/lang_keywords.html
 //| K_INSERT
 //| K_INSTEAD
 | K_INTERSECT
+| K_INTERVAL
 //| K_INTO
 | K_IS
 | K_ISNULL
@@ -253,6 +274,9 @@ keyword  // https://sqlite.org/lang_keywords.html
 | K_LIMIT
 | K_MATCH
 //| K_MATERIALIZED
+| K_MILLISECOND
+| K_MINUTE
+| K_MONTH
 | K_NATURAL
 | K_NO
 | K_NOT
@@ -288,6 +312,7 @@ keyword  // https://sqlite.org/lang_keywords.html
 | K_ROW
 | K_ROWS
 //| K_SAVEPOINT
+| K_SECOND
 | K_SELECT
 //| K_SET
 //| K_TABLE
@@ -295,6 +320,8 @@ keyword  // https://sqlite.org/lang_keywords.html
 //| K_TEMPORARY
 | K_THEN
 | K_TIES
+| K_TIME
+| K_TIMESTAMP
 | K_TRUE
 //| K_TO
 //| K_TRANSACTION
@@ -314,6 +341,7 @@ keyword  // https://sqlite.org/lang_keywords.html
 | K_WITH
 //| K_WITHOUT
 //| K_NEXTVAL
+| K_YEAR
 ;
 
 // names
@@ -382,6 +410,8 @@ K_CROSS: C R O S S;
 K_CURRENT_TIME: C U R R E N T '_' T I M E;
 K_CURRENT_DATE: C U R R E N T '_' D A T E;
 K_CURRENT_TIMESTAMP: C U R R E N T '_' T I M E S T A M P;
+K_DATE: D A T E;
+K_DAY: D A Y;
 K_DEFAULT: D E F A U L T;
 K_DESC: D E S C;
 K_DISTINCT: D I S T I N C T;
@@ -403,11 +433,13 @@ K_GLOB: G L O B;
 K_GROUP: G R O U P;
 K_GROUPS: G R O U P S;
 K_HAVING: H A V I N G;
+K_HOUR: H O U R;
 K_IGNORE: I G N O R E;
 K_IN: I N;
 K_INDEXED: I N D E X E D;
 K_INNER: I N N E R;
 K_INTERSECT: I N T E R S E C T;
+K_INTERVAL: I N T E R V A L;
 K_IS: I S;
 K_ISNULL: I S N U L L;
 K_JOIN: J O I N;
@@ -418,6 +450,9 @@ K_LIKE: L I K E;
 K_LIMIT: L I M I T;
 K_MATCH: M A T C H;
 //K_MATERIALIZED: M A T E R I A L I Z E D;
+K_MILLISECOND: M I L L I S E C O N D;
+K_MINUTE: M I N U T E;
+K_MONTH: M O N T H;
 K_NATURAL: N A T U R A L;
 K_NO: N O;
 K_NOT: N O T;
@@ -443,9 +478,12 @@ K_RIGHT: R I G H T;
 K_ROLLBACK: R O L L B A C K;
 K_ROW: R O W;
 K_ROWS: R O W S;
+K_SECOND: S E C O N D;
 K_SELECT: S E L E C T;
 K_THEN: T H E N;
 K_TIES: T I E S;
+K_TIME: T I M E;
+K_TIMESTAMP: T I M E S T A M P;
 K_TRUE: T R U E;
 K_UNBOUNDED: U N B O U N D E D;
 K_UNION: U N I O N;
@@ -455,6 +493,7 @@ K_WHEN: W H E N;
 K_WHERE: W H E R E;
 K_WINDOW: W I N D O W;
 K_WITH: W I T H;
+K_YEAR: Y E A R;
 
 TYPE_NAME
 : T E X T
