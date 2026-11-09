@@ -1,5 +1,14 @@
 # Dolphin Project
 
+> ## 저장소 상태
+>
+> 본 저장소는 아래 과제의 **1단계(2023~2024)** 구성요소로, Trino 기반 데이터 모델 생성 및 복합(융합) 모델 기능을 제공했습니다.
+> 데이터 융합 기능은 2단계에서 재구현되었습니다.
+>
+> - 과제명: 분산된 데이터에 대한 논리적 데이터 통합과 복합분석을 지원하는 데이터 패브릭 기술개발
+> - 과제번호: RS-2023-00222191
+> - 개발 기간: 2024년 6월 ~ 2024년 11월
+
 Data Operations and Processing with Logically Integrated High-performance INtegration
 
 ## Tools
